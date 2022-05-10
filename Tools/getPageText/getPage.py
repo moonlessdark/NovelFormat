@@ -26,11 +26,12 @@ class getNovel:
                     if len(next_page_url_list) == 0:
                         break
                     next_page_url = next_page_url_list[0]
-                    end_str = [".com", ".COM", ".C0M", "C〇M", ".net", "C0m", ".comc0M", ".comC0M", ".com:C0M"]
+                    end_str = [".com", ".COM", ".C0M", "C〇M", ".net", "C0m", ".comc0M", ".comC0M", ".com:C0M", ':C0M']
                     for j in end_str:
                         if j in title_name:
                             title_name = title_name.replace(j, "")
-                    file = open(file_path + title_name + ".txt", "a+", encoding="utf-8")
+                    file_name = file_path + title_name
+                    file = open(file_name + ".txt", "a+", encoding="utf-8")
                     for i in content:
                         i = i.replace('\xa0', '')  # 去除空格
                         i = i.replace('“”', '')  # 去除这种里面没有内容的
