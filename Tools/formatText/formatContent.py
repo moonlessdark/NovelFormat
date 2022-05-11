@@ -1,5 +1,5 @@
 import re
-
+from template.rexp_template import template
 from Tools.textToPackage import *
 
 
@@ -143,7 +143,8 @@ class formatByRule():
         :param content:
         :return:
         """
-        change_line_str = ["。", "？", "！"]
+        change_line_str = template.wrap_character.value  # 句号之类的
+
         while True:
             result = re.findall("(.*?)“", content)
             # result = content.split("“")
@@ -179,7 +180,7 @@ class formatByRule():
         :param content:
         :return:
         """
-        change_line_str = ["。", "？", "！"]  # 如果碰到这个标点符号，就换行
+        change_line_str = template.wrap_character.value  # 句号之类的，如果碰到这个标点符号，就换行
 
         for i in change_line_str:
             if i != '':
@@ -220,6 +221,7 @@ class formatByRule():
                             is_start = False
                         else:
                             content_str = content_str + h
+        content_str = self.clear_ad_str(content_str)
         return content_str.split('\n')
 
     def wrap_by_str(self, content: list)-> list:
@@ -228,7 +230,8 @@ class formatByRule():
         :param content:
         :return:
         """
-        end_str = ['：', "说道", "嘀咕", "笑骂", "怒骂", "骂道", "碎碎念", "大吼", "大叫", "笑道", "嘟囔", "揶揄", "问道", '呵斥', '边唱', '边说']
+        # end_str = ['：', "说道", "嘀咕", "笑骂", "怒骂", "骂道", "碎碎念", "大吼", "大叫", "笑道", "嘟囔", "揶揄", "问道", '呵斥', '边唱', '边说']
+        end_str = template.talk_str.value
         line_content_str = ""
         for l in content:
             if l != '':
@@ -273,3 +276,25 @@ class formatByRule():
                 else:
                     line_content_str = line_content_str + l + '\n'
         return line_content_str.split('\n')
+
+    def clear_ad_str(self, content: str) -> str:
+        """
+        去除广告, 去除固定的以某个字符串开头+某个字符串结尾的广告
+        :param content:
+        :return:
+        """
+        ad_str_tuple = template.ad_str.value
+        if len(ad_str_tuple) > 0:
+            for ad_num in ad_str_tuple:
+                start = ad_num[0]
+                end = ad_num[1]
+                rex = start + '(.*?)' + end
+                result = re.findall(rex, content)
+                if len(result) > 0:
+                    for ad_str in range(len(result)):
+                        if ad_str != '':
+                            replace_str = start + str(result[ad_str]) + end
+                            if '\\' in replace_str:
+                                replace_str = replace_str.replace('\\', '')
+                            content = content.replace(replace_str, '')
+        return content

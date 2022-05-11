@@ -34,9 +34,9 @@ def format_content_2(origin_text_path: str, save_format_text_path: str, text_nam
 
 if __name__ == "__main__":
     save_folder_path = "D:/Download/新建文件夹/origin/"  # 下载txt文件存储的地址
-    save_format_text_path = "D:/Download/新建文件夹/format/"  # 格式化下载的文件存储的地址
+    save_format_text_path = "D:/Download/新建文件夹/115/"  # 格式化下载的文件存储的地址
 
-    get_novel(page_url="https://i.shubao12.cc/11_11500/181406.html", save_file_path=save_folder_path)  # 下载小说，从第一章第一页开始
+    # get_novel(page_url="http://i.shubao12.cc/11_11500/232204.html", save_file_path=save_folder_path)  # 下载小说，从第一章第一页开始
 
     # 下载完了，开始格式化小说
     file_list = fileOpt.read_file_path(save_folder_path)
