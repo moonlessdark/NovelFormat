@@ -25,13 +25,13 @@ class formatByRule():
         content_list = content.split("\n")
         return content_list
 
-    @staticmethod
-    def format_end_2_start_double_quotation_mark(content: str) -> list:
+    def format_end_2_start_double_quotation_mark(self, content: str) -> list:
         """
         结束双引号和开始双引号之间  例如， “xxxx”<换行>"xxxx"
         :param content:
         :return:
         """
+        content = self.clear_ad_str(content)
         a = re.findall("”“", content)
         if len(a) > 0:
             content = re.sub('”“', '”\\n“', content)
@@ -136,15 +136,13 @@ class formatByRule():
                                 print("sss")
         return content.split("\n")
 
-    @staticmethod
-    def format_start_str(content) -> list:
+    def format_start_str(self, content: str) -> list:
         """
         双引号左侧的数据，如果有以下标识符，就换行
         :param content:
         :return:
         """
         change_line_str = template.wrap_character.value  # 句号之类的
-
         while True:
             result = re.findall("(.*?)“", content)
             # result = content.split("“")
@@ -153,10 +151,7 @@ class formatByRule():
                     if i != "":
                         split_result = content.split(i)
                         left_result = split_result[0]
-                        try:
-                            right_result = split_result[1]
-                        except Exception:
-                            print("数组越界了")
+                        right_result = split_result[1]
                         if "了一声" not in i:
                             if "”" in i:
                                 n = re.sub("”", "”\\n", i)
@@ -221,17 +216,16 @@ class formatByRule():
                             is_start = False
                         else:
                             content_str = content_str + h
-        content_str = self.clear_ad_str(content_str)
         return content_str.split('\n')
 
-    def wrap_by_str(self, content: list)-> list:
+    def wrap_by_str(self, content: list) -> list:
         """
         一行文字中，双引号左右2边都有内容的进行判断，检查是前面还是后面需要换行。
         :param content:
         :return:
         """
-        # end_str = ['：', "说道", "嘀咕", "笑骂", "怒骂", "骂道", "碎碎念", "大吼", "大叫", "笑道", "嘟囔", "揶揄", "问道", '呵斥', '边唱', '边说']
-        end_str = template.talk_str.value
+        talk_str = template.talk_str.value
+        end_str = template.end_str.value
         line_content_str = ""
         for l in content:
             if l != '':
@@ -240,38 +234,59 @@ class formatByRule():
                 l_list_left = l.split('“')
                 l_list_right = l.split('”')
                 if len(l_list_left) > 2:
+                    """
+                    如果查到了多条数据
+                    """
                     line = re.sub('”', '”'+'\n', l)
                     line_split = line.split('\n')
                     for s in line_split:
-                        for e in end_str:
+                        for e in talk_str:
                             if e in s:
                                 change_line_left = True
                                 continue
-                        if change_line_left is True:
-                            line_content_str = line_content_str + s + '\n'
-                        else:
-                            line_content_str = line_content_str + s
+                        # if change_line_left is True:
+                        #     line_content_str = line_content_str + s + '\n'
+                        # else:
+                        #     line_content_str = line_content_str + s
+                        line_content_str = line_content_str + s + '\n' if change_line_left is True else line_content_str + s
                 elif len(l_list_left) == 2:
+                    """
+                    如果刚好只有前后2条
+                    """
                     if l_list_left[0] != '':
                         """
                         检查对话左侧的数据
                         """
-                        for e in end_str:
+                        for e in talk_str:
                             if e in l_list_left[0]:
                                 change_line_left = True
                                 continue
                     if l_list_right[1] != '':
-                        for e in end_str:
+                        for e in talk_str:
                             if e in l_list_right[1]:
                                 change_line_right = True
-                                continue
+                        for k in end_str:
+                            """
+                            这里我们检查一下双引号后面有没有接不允许换行的字符
+                            """
+                            if l_list_right[0] == k:
+                                change_line_right = True
                     if change_line_left is True and change_line_right is False:
+                        """
+                        如果左侧有说话的词语右侧没有
+                        """
                         line_str = l.replace('”', '”'+'\n')
                         line_content_str = line_content_str + line_str + '\n'
                     elif change_line_left is False and change_line_right is True:
+                        """
+                        如果左侧没有但右侧有
+                        """
                         line_str = l.replace('“', '\n' + '“')
                         line_content_str = line_content_str + line_str + '\n'
                     else:
+                        """
+                        如果左侧和右侧都有说话的词语，或者都没有说话的词语
+                        """
                         line_content_str = line_content_str + l + '\n'
                 else:
                     line_content_str = line_content_str + l + '\n'
