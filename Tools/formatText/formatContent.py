@@ -27,7 +27,7 @@ class formatByRule():
 
     def format_end_2_start_double_quotation_mark(self, content: str) -> list:
         """
-        结束双引号和开始双引号之间  例如， “xxxx”<换行>"xxxx"
+        检查双引号和开始双引号之间  例如， “xxxx”<换行>"xxxx"
         :param content:
         :return:
         """
@@ -48,7 +48,8 @@ class formatByRule():
         :param content:
         :return:
         """
-        change_line_str = ["。", "？", "！"]
+        # change_line_str = ["。", "？", "！"]
+        change_line_str = template.wrap_character.value
         result = re.findall("”(.*?)“", content)
         if len(result) > 0:
             for i in range(len(result)):
@@ -77,7 +78,7 @@ class formatByRule():
                     """
                     如果str里面没有特定的标点符号，那么执行以下操作
                     """
-                    str_not_split = ['了一声', '了一句', '的', '都']
+                    str_not_split = template.talk_str.value
                     for x in str_not_split:
                         if split_string.find(x) != 0:
                             """
@@ -90,50 +91,6 @@ class formatByRule():
                         """
                         a = split_string + right_str
                         content = content.replace(a, "\n" + a)
-        return content.split("\n")
-
-
-    @staticmethod
-    def format_end_str(content: str) -> list:
-        """
-        检查双引号后面的数据，到句号为止，其中有么有以下关键字。有的话就句号后面换行，没有就引号后面换行
-        :param content:
-        :return:
-        """
-        end_str = ["说道", "嘀咕", "笑骂", "怒骂", "骂道", "碎碎念", "大吼", "大叫", "笑道", "嘟囔", "揶揄道", "问道"]
-        result = re.findall("”(.*?)。", content)
-        end_bool = False
-
-        # print(content)
-        if len(result) > 0:
-            for i in result:
-                if i != "":
-                    split_result = content.split(i)
-                    left_results = split_result[0]
-                    try:
-                        right_results = split_result[1]
-                    except Exception as e:
-                        print("数组越界")
-                    if "“" in i:
-                        if "了一声" not in i:
-                            n = re.sub("”", "”\\n", i)
-                            content = left_results + n + right_results
-                        else:
-                            temp_str = i + right_results
-                            content = re.sub(temp_str, "\\n" + temp_str, content)
-                    else:
-                        for n in end_str:
-                            if n in i:
-                                k = re.sub("。", "。\\n", i)
-                                content = left_results + k + right_results
-                                end_bool = True
-                                break
-                        if end_bool is False:
-                            temp_str = i + right_results
-                            try:
-                                content = re.sub(temp_str, "\\n" + temp_str, content)
-                            except Exception:
-                                print("sss")
         return content.split("\n")
 
     def format_start_str(self, content: str) -> list:
@@ -244,10 +201,6 @@ class formatByRule():
                             if e in s:
                                 change_line_left = True
                                 continue
-                        # if change_line_left is True:
-                        #     line_content_str = line_content_str + s + '\n'
-                        # else:
-                        #     line_content_str = line_content_str + s
                         line_content_str = line_content_str + s + '\n' if change_line_left is True else line_content_str + s
                 elif len(l_list_left) == 2:
                     """
@@ -312,4 +265,44 @@ class formatByRule():
                             if '\\' in replace_str:
                                 replace_str = replace_str.replace('\\', '')
                             content = content.replace(replace_str, '')
+        return content
+
+    def fix_double_quotes(self, content: str) -> str:
+        """
+        检查双引号是否存在异常使用的情况。
+        :param content:
+        :return:
+        """
+        start_str = '“'
+        end_str = '”'
+
+        left_list = [substr.start() for substr in re.finditer(start_str, content)]  # 查询开始字符串所有的index
+        right_list = [substr.start() for substr in re.finditer(end_str, content)]  # 查询结束字符串所有的index
+
+        left_list.extend(right_list)
+        left_list.sort()  # 按照从小到大排序
+
+        if len(left_list) % 2 == 0:  # 说明是个偶数
+            for i in range(len(left_list)):
+                left = left_list[i]
+                right = left_list[i + 1]
+                if len(left_list) == i + 1:
+                    # 如果此时已经循环到最后一个了，
+                    break
+                if i % 2 != 0:
+                    continue
+                if content[left_list[i]] == start_str and content[left_list[i + 1]] == end_str:
+                    """
+                    第一个字符串是开始，第二个字符串是结束
+                    """
+                    continue
+                else:
+                    if content[left] != start_str:
+                        string_list = list(content)
+                        string_list[left] = start_str
+                        content = ''.join(string_list)
+                    if content[right] != end_str:
+                        string_list = list(content)
+                        string_list[right] = end_str
+                        content = ''.join(string_list)
         return content
