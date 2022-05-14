@@ -224,24 +224,22 @@ class formatByRule():
                     #             change_line_left = True
                     #             continue
                     #     line_content_str = line_content_str + s + '\n' if change_line_left is True else line_content_str + s
-
                     start_str_index = [substr.start() for substr in re.finditer('“', l)]
                     end_str_index = [substr.start() for substr in re.finditer('”', l)]
-                    for index in range(len(start_str_index)):
-                        for ss in talk_str:
-                            try:
-                                i = 0 if index == 0 else end_str_index[index - 1] + 1
-                            except Exception:
-                                print("sss")
-                            if ss in l[i:start_str_index[index]]:
-                                line_content_str = line_content_str + '\n' + l[i:end_str_index[index] + 1]
-                                break
+                    short_list = start_str_index if len(start_str_index) < len(end_str_index) else end_str_index
+                    for index in range(len(short_list)):
+                        i = 0 if index == 0 else end_str_index[index - 1] + 1
+                        if any(l[i:start_str_index[index]].find(ss) for ss in talk_str):
+                            line_content_str = line_content_str + '\n' + l[i:end_str_index[index] + 1]
+                        else:
+                            line_content_str = line_content_str + l[i:end_str_index[index] + 1] + '\n'
                     if l[-1] != '”':
-
                         if any(l[end_str_index[-1]+1:].find(j) for j in end_str):
                             line_content_str = line_content_str + l[end_str_index[-1] + 1:] + '\n'
                         else:
                             line_content_str = line_content_str + '\n' + l[end_str_index[-1] + 1:] + '\n'
+                    else:
+                        line_content_str = line_content_str + '\n' + l[end_str_index[-1] + 1:] + '\n'
                 elif len(l_list_left) == 2:
                     """
                     如果刚好只有前后2条
@@ -325,6 +323,30 @@ class formatByRule():
         if len(left_list) % 2 == 0:  # 说明是个偶数
             for i in range(len(left_list)):
                 if len(left_list) == i + 1:
+                    # 如果此时已经循环到最后一个了，
+                    break
+                if i % 2 != 0:
+                    continue
+                left = left_list[i]
+                right = left_list[i + 1]
+                if content[left] == start_str and content[right] == end_str:
+                    """
+                    第一个字符串是开始，第二个字符串是结束
+                    """
+                    continue
+                else:
+                    if content[left] != start_str:
+                        string_list = list(content)
+                        string_list[left] = start_str
+                        content = ''.join(string_list)
+                    if content[right] != end_str:
+                        string_list = list(content)
+                        string_list[right] = end_str
+                        content = ''.join(string_list)
+        else:
+            print("-"*50+'\n'"该章节的双引号异常，存在缺失或者错误位置，请手动处理"+'\n'+"-"*50)
+            for i in range(len(left_list)):
+                if len(left_list) == i + 2:
                     # 如果此时已经循环到最后一个了，
                     break
                 if i % 2 != 0:
