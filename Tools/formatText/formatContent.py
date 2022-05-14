@@ -1,6 +1,7 @@
 import re
+
+from Tools.textToPackage import formatContent as f
 from template.rexp_template import template
-from Tools.textToPackage import *
 
 
 class formatByRule():
@@ -9,7 +10,7 @@ class formatByRule():
     """
 
     def __init__(self):
-        self.fc = formatContent()
+        self.fc = f()
 
     @staticmethod
     def format_double_quotation_mark(content: str) -> list:
@@ -32,6 +33,7 @@ class formatByRule():
         :return:
         """
         content = self.clear_ad_str(content)
+        content = self.fix_double_quotes(content)
         a = re.findall("”“", content)
         if len(a) > 0:
             content = re.sub('”“', '”\\n“', content)
@@ -102,7 +104,6 @@ class formatByRule():
         change_line_str = template.wrap_character.value  # 句号之类的
         while True:
             result = re.findall("(.*?)“", content)
-            # result = content.split("“")
             if len(result) > 0:
                 for i in result:
                     if i != "":
@@ -133,10 +134,9 @@ class formatByRule():
         :return:
         """
         change_line_str = template.wrap_character.value  # 句号之类的，如果碰到这个标点符号，就换行
-
         for i in change_line_str:
             if i != '':
-                content_change = re.sub(i, i+'\n', content)
+                content_change = re.sub(i, i + '\n', content)
                 content_list = content_change.split("\n")
                 content = ""
                 for n in range(len(content_list)):
@@ -153,26 +153,48 @@ class formatByRule():
         :return:
         """
         content_str = ""
-        is_end = False
         is_start = False
         for h in content:
             if h != '':
-                if "“" in h and '”' not in h:
-                    is_start = True
-                    is_end = False
-                    content_str = content_str + h
-                elif "“" not in h and '”' in h:
-                    content_str = content_str + h + '\n'
-                    is_end = True
-                else:
-                    if is_start is False:
-                        content_str = content_str + h + '\n'
+                if is_start is False:
+                    # 如果最有一次出现的开始符的index大于结束符,说明这句话没说完
+                    if h.rfind('“') > h.rfind('”'):
+                        # 开始新的循环
+                        is_start = True
+                        content_str = content_str + h
                     else:
-                        if is_end is True:
-                            content_str = content_str + '\n' + h + '\n'
-                            is_start = False
-                        else:
-                            content_str = content_str + h
+                        # 正常换行
+                        content_str = content_str + h + '\n'
+                elif is_start is True:
+                    if h[0] != '“' and h.rfind('“') < h.rfind('”'):  # 不是以开始双引号开头，但是有结束双引号结尾。说明这句话说完了
+                        is_start = False
+                        content_str = content_str + h + '\n'
+                    elif h[0] != '“' and h.rfind('“') > h.rfind('”'):  # 不是以开始双引号开头，但是以开始双引号结尾，说明虽然说完了，但是又说了一句话
+                        content_str = content_str + h
+                    elif h[0] != '“' and h.rfind('“') == h.rfind('”'):  # 不是以开始双引号开头，但是居然没有开始符合和结束符，说明话还没说完
+                        content_str = content_str + h
+                    else:
+                        # 如果进来这一行，理论上有异常数据了。上一句明明还没说完，但第一个字符居然是结束双引号,避免接下来数据异常，还是进行换行操作
+                        is_start = False
+                        content_str = content_str + h + '\n'
+
+                # if "“" in h and '”' != h[-1]:  # 最后一位不是结束的双引号
+                #     if is_start is True and is_end is False:
+                #     is_start = True
+                #     is_end = False
+                #     content_str = content_str + h
+                # elif "“" != h[0] and '”' in h:  # 第一个字符不是开始的双引号符号
+                #     is_start = False
+                #     is_end = True
+                #     content_str = content_str + h + '\n'
+                # else:
+                #     if is_start is False:
+                #         content_str = content_str + h + '\n'
+                #     else:
+                #         if is_end is True:
+                #             content_str = content_str + '\n' + h + '\n'
+                #         else:
+                #             content_str = content_str + h
         return content_str.split('\n')
 
     def wrap_by_str(self, content: list) -> list:
@@ -194,14 +216,32 @@ class formatByRule():
                     """
                     如果查到了多条数据
                     """
-                    line = re.sub('”', '”'+'\n', l)
-                    line_split = line.split('\n')
-                    for s in line_split:
-                        for e in talk_str:
-                            if e in s:
-                                change_line_left = True
-                                continue
-                        line_content_str = line_content_str + s + '\n' if change_line_left is True else line_content_str + s
+                    # line = re.sub('”', '”'+'\n', l)
+                    # line_split = line.split('\n')
+                    # for s in line_split:
+                    #     for e in talk_str:
+                    #         if e in s:
+                    #             change_line_left = True
+                    #             continue
+                    #     line_content_str = line_content_str + s + '\n' if change_line_left is True else line_content_str + s
+
+                    start_str_index = [substr.start() for substr in re.finditer('“', l)]
+                    end_str_index = [substr.start() for substr in re.finditer('”', l)]
+                    for index in range(len(start_str_index)):
+                        for ss in talk_str:
+                            try:
+                                i = 0 if index == 0 else end_str_index[index - 1] + 1
+                            except Exception:
+                                print("sss")
+                            if ss in l[i:start_str_index[index]]:
+                                line_content_str = line_content_str + '\n' + l[i:end_str_index[index] + 1]
+                                break
+                    if l[-1] != '”':
+
+                        if any(l[end_str_index[-1]+1:].find(j) for j in end_str):
+                            line_content_str = line_content_str + l[end_str_index[-1] + 1:] + '\n'
+                        else:
+                            line_content_str = line_content_str + '\n' + l[end_str_index[-1] + 1:] + '\n'
                 elif len(l_list_left) == 2:
                     """
                     如果刚好只有前后2条
@@ -224,13 +264,13 @@ class formatByRule():
                             """
                             if l_list_right[0] == k:
                                 change_line_right = True
-                    if change_line_left is True and change_line_right is False:
+                    if change_line_left is True:
                         """
                         如果左侧有说话的词语右侧没有
                         """
-                        line_str = l.replace('”', '”'+'\n')
+                        line_str = l.replace('”', '”' + '\n')
                         line_content_str = line_content_str + line_str + '\n'
-                    elif change_line_left is False and change_line_right is True:
+                    elif change_line_right is True:
                         """
                         如果左侧没有但右侧有
                         """
@@ -284,14 +324,14 @@ class formatByRule():
 
         if len(left_list) % 2 == 0:  # 说明是个偶数
             for i in range(len(left_list)):
-                left = left_list[i]
-                right = left_list[i + 1]
                 if len(left_list) == i + 1:
                     # 如果此时已经循环到最后一个了，
                     break
                 if i % 2 != 0:
                     continue
-                if content[left_list[i]] == start_str and content[left_list[i + 1]] == end_str:
+                left = left_list[i]
+                right = left_list[i + 1]
+                if content[left] == start_str and content[right] == end_str:
                     """
                     第一个字符串是开始，第二个字符串是结束
                     """

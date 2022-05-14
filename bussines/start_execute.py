@@ -41,11 +41,9 @@ class executeFormat():
         if len(content_list) > 0:
             for i in content_list:
                 if i != "":
-                    step_1_list = self.f.wrap_by_double_quotation_mark(i)  # 把2个双引号直接的文案换行
-                    for y in step_1_list:
-                        step_2_list = self.f.wrap_by_punctuation_mark(y)  # 先统一按标点符号进行换行
-                        for j in step_2_list:
-                            format_content_list.append(j)
+                    step_2_list = self.f.wrap_by_punctuation_mark(i)  # 先统一按标点符号进行换行
+                    for j in step_2_list:
+                        format_content_list.append(j)
             list_2 = self.f.merge_talk(format_content_list)  # 把所有双引号中间的文案都合并到同一行，个人习惯问题
             list_3 = self.f.wrap_by_str(list_2)  # 再次判断一下双引号左右2边的文案有没有说话的动词，再来判断是不是要换行。这是因为双引号里的内容并不一定代表了说话，也可能是表示重点信息
             return list_3
