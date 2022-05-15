@@ -26,14 +26,15 @@ class formatByRule():
         content_list = content.split("\n")
         return content_list
 
-    def format_end_2_start_double_quotation_mark(self, content: str) -> list:
+    def format_end_2_start_double_quotation_mark(self, content: str, text_tile_name: str = None) -> list:
         """
         检查双引号和开始双引号之间  例如， “xxxx”<换行>"xxxx"
+        :param text_tile_name:
         :param content:
         :return:
         """
         content = self.clear_ad_str(content)
-        content = self.fix_double_quotes(content)
+        content = self.fix_double_quotes(content=content, text_title_name=text_tile_name)
         a = re.findall("”“", content)
         if len(a) > 0:
             content = re.sub('”“', '”\\n“', content)
@@ -177,24 +178,6 @@ class formatByRule():
                         # 如果进来这一行，理论上有异常数据了。上一句明明还没说完，但第一个字符居然是结束双引号,避免接下来数据异常，还是进行换行操作
                         is_start = False
                         content_str = content_str + h + '\n'
-
-                # if "“" in h and '”' != h[-1]:  # 最后一位不是结束的双引号
-                #     if is_start is True and is_end is False:
-                #     is_start = True
-                #     is_end = False
-                #     content_str = content_str + h
-                # elif "“" != h[0] and '”' in h:  # 第一个字符不是开始的双引号符号
-                #     is_start = False
-                #     is_end = True
-                #     content_str = content_str + h + '\n'
-                # else:
-                #     if is_start is False:
-                #         content_str = content_str + h + '\n'
-                #     else:
-                #         if is_end is True:
-                #             content_str = content_str + '\n' + h + '\n'
-                #         else:
-                #             content_str = content_str + h
         return content_str.split('\n')
 
     def wrap_by_str(self, content: list) -> list:
@@ -216,14 +199,6 @@ class formatByRule():
                     """
                     如果查到了多条数据
                     """
-                    # line = re.sub('”', '”'+'\n', l)
-                    # line_split = line.split('\n')
-                    # for s in line_split:
-                    #     for e in talk_str:
-                    #         if e in s:
-                    #             change_line_left = True
-                    #             continue
-                    #     line_content_str = line_content_str + s + '\n' if change_line_left is True else line_content_str + s
                     start_str_index = [substr.start() for substr in re.finditer('“', l)]
                     end_str_index = [substr.start() for substr in re.finditer('”', l)]
                     short_list = start_str_index if len(start_str_index) < len(end_str_index) else end_str_index
@@ -305,9 +280,10 @@ class formatByRule():
                             content = content.replace(replace_str, '')
         return content
 
-    def fix_double_quotes(self, content: str) -> str:
+    def fix_double_quotes(self, content: str, text_title_name: str = None) -> str:
         """
         检查双引号是否存在异常使用的情况。
+        :param text_title_name:
         :param content:
         :return:
         """
@@ -344,7 +320,9 @@ class formatByRule():
                         string_list[right] = end_str
                         content = ''.join(string_list)
         else:
-            print("-"*50+'\n'"该章节的双引号异常，存在缺失或者错误位置，请手动处理"+'\n'+"-"*50)
+            print('\n' + "-"*80+'')
+            print("该章节(%s)的双引号异常，存在缺失或者错误位置，请手动处理后重试" % text_title_name)
+            print("-" * 80)
             for i in range(len(left_list)):
                 if len(left_list) == i + 2:
                     # 如果此时已经循环到最后一个了，

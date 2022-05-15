@@ -1,3 +1,5 @@
+import re
+
 from requestsCore.requestBy import request as req
 
 
@@ -18,10 +20,16 @@ class getNovel:
                 content = data.xpath("//div[@id='nr' and @class='nr_nr']/div[@id='nr1']/descendant-or-self::text()")
                 next_page_name = data.xpath("//a[@id='pb_next']/descendant-or-self::text()")
                 next_page_url_list = data.xpath("//a[@id='pb_next']/@href")
-                title_name = data.xpath("//title/text()")
-
-                title_name = title_name[0]
-
+                title_name = data.xpath("//div[@id='nr_title']/descendant-or-self::text()")
+                try:
+                    title_name = title_name[0]
+                except Exception:
+                    print("文章都下载下来了")
+                    break
+                title_name_list = re.findall('\(第(.*?)页\)', title_name)
+                if len(title_name_list) > 0:
+                    title_name = re.sub('[\r\n\u2028\u2029\s]', '', title_name, 0)
+                    title_name = re.sub('\(第' + title_name_list[0] + '页\)', '', title_name)
                 if "下一页" or "下一章" in next_page_name:
                     if len(next_page_url_list) == 0:
                         break
