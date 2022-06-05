@@ -39,15 +39,7 @@ class request(object):
         self.re.close()  # 避免重试时有太多连接，开始时就先关闭一下
         sleep_time = random.randint(1, 5)
         time.sleep(sleep_time)  # 稍微等待以下，减小服务器压力
-        element = None
-        # try:
-        #     self.count_i = self.count_i + 1
-        #     element = self.re.get(url=url, stream=True, timeout=(20, 300), headers=self.headers, proxies=self.p)
-        # except requests.RequestException as e:
-        #     if self.count_i >= 5:
-        #         print("连续5次请求失败:%s" % e)
-        #         self.count_i = 0
-        #         return None
+
         element = self.re.get(url=url, stream=True, timeout=(20, 300), headers=self.headers, proxies=self.p)
         if element is not None:
             if element.status_code != 200:
