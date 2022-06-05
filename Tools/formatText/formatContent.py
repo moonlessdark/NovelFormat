@@ -180,7 +180,7 @@ class formatByRule():
                         content_str = content_str + h + '\n'
         return content_str.split('\n')
 
-    def wrap_by_str(self, content: list) -> list:
+    def wrap_by_str2(self, content: list) -> list:
         """
         一行文字中，双引号左右2边都有内容的进行判断，检查是前面还是后面需要换行。
         :param content:
@@ -204,17 +204,20 @@ class formatByRule():
                     short_list = start_str_index if len(start_str_index) < len(end_str_index) else end_str_index
                     for index in range(len(short_list)):
                         i = 0 if index == 0 else end_str_index[index - 1] + 1
-                        if any(l[i:start_str_index[index]].find(ss) for ss in talk_str):
+                        # 开始检查是否有对话
+                        sss = l[i:start_str_index[index]]
+                        if any(ss in sss for ss in talk_str):
                             line_content_str = line_content_str + '\n' + l[i:end_str_index[index] + 1]
                         else:
-                            line_content_str = line_content_str + l[i:end_str_index[index] + 1] + '\n'
-                    if l[-1] != '”':
-                        if any(l[end_str_index[-1]+1:].find(j) for j in end_str):
-                            line_content_str = line_content_str + l[end_str_index[-1] + 1:] + '\n'
-                        else:
-                            line_content_str = line_content_str + '\n' + l[end_str_index[-1] + 1:] + '\n'
-                    else:
-                        line_content_str = line_content_str + '\n' + l[end_str_index[-1] + 1:] + '\n'
+                            # line_content_str = line_content_str + l[i:end_str_index[index] + 1]
+                            if l[i] != '”':
+                                jj = l[end_str_index[index] + 1:end_str_index[index] + 2]
+                                if any(j in jj for j in end_str):
+                                    line_content_str = line_content_str + l[i:end_str_index[index] + 1]
+                                else:
+                                    line_content_str = line_content_str + '\n' + l[i:end_str_index[index] + 1] + '\n'
+                            else:
+                                line_content_str = line_content_str + '\n' + l[i:end_str_index[index] + 1] + '\n'
                 elif len(l_list_left) == 2:
                     """
                     如果刚好只有前后2条
@@ -256,6 +259,91 @@ class formatByRule():
                         line_content_str = line_content_str + l + '\n'
                 else:
                     line_content_str = line_content_str + l + '\n'
+        return line_content_str.split('\n')
+
+    @staticmethod
+    def __left_index(start_str_index: list, end_str_index: list) -> list:
+        left_star_list = []
+        for ss in range(len(start_str_index)):
+            if ss == 0:
+                x = 0
+                y = start_str_index[ss]
+            else:
+                x = end_str_index[ss - 1]
+                y = start_str_index[ss]
+            left_star_list.append([x, y])
+        return left_star_list
+
+    @staticmethod
+    def __right_index(start_str_index: list, end_str_index: list) -> list:
+        right_star_list = []
+        for ssr in range(len(start_str_index)):
+            if ssr == len(start_str_index) - 1:
+                x = end_str_index[ssr]
+                y = -1
+            else:
+                x = end_str_index[ssr]
+                y = start_str_index[ssr + 1]
+            right_star_list.append([x, y])
+        return right_star_list
+
+    def wrap_by_str(self, content: list) -> list:
+        global any
+        talk_str = template.talk_str.value
+        end_str = template.end_str.value
+        line_content_str = ""
+        for l in content:
+            if l != '':
+                start_str_index = [substr.start() for substr in re.finditer('“', l)]  # 得到所有的开始符
+                end_str_index = [substr.start() for substr in re.finditer('”', l)]  # 得到所有的结束符
+                if len(start_str_index) == len(end_str_index) and len(start_str_index) > 0:  # 说明有开始结束符，且是数量相同的
+                    c = lambda start_str_index, end_str_index: True if any(
+                        int(end_str_index[i]) > int(start_str_index[i]) for i in range(len(start_str_index))) else False  # 检查是不是开始符+结束符的排序
+                    if c(start_str_index=start_str_index, end_str_index=end_str_index) is True:
+                        # 如是结束符的下标都大于开始符的下标，这是正确的数据
+                        str_split_point = 0  # 字符串下标标记点，用于记录当前字符串已经切到那个字符
+                        for k in range(len(start_str_index)):
+
+                            left_star_list = self.__left_index(start_str_index=start_str_index,
+                                                               end_str_index=end_str_index)
+                            right_star_list = self.__right_index(start_str_index=start_str_index,
+                                                                 end_str_index=end_str_index)
+                            end_str_index_str = end_str_index[k] + 1
+                            right_check_str: str = l[right_star_list[k][0]:right_star_list[k][1]]
+                            left_check_str: str = l[left_star_list[k][0]:left_star_list[k][1]]
+                            if right_star_list[k][1] == -1:  # 到末尾了
+                                if left_star_list[k][0] == 0:
+                                    if any(right_check_str.find(j) == 1 for j in end_str) or any(j in right_check_str for j in talk_str):
+                                        # 说明双引号结尾的第一个字符是不需要换行的或者这里面有表示说话的
+                                        line_content_str = line_content_str + l[str_split_point:] + '\n'
+                                    else:
+                                        line_content_str = line_content_str + '\n' + l[str_split_point:end_str_index[k]+1] + '\n' + l[end_str_index[k]+1:] + '\n'
+                                else:  # 没到末尾，说明现在是倒数第二句，让我们来看看
+                                    if any(left_check_str.find(j) == 1 for j in end_str):  # 检测右侧是否有不需要换行的字符
+                                        line_content_str = line_content_str + l[str_split_point:] + '\n'
+                                    elif any(j in left_check_str for j in talk_str):  # 开始检查开始符左侧是否有关键字
+                                        # 如果左侧有表示说话的字符，那么就从左侧换行
+                                        line_content_str = line_content_str + '\n' + l[str_split_point:end_str_index[k]+1] + '\n' + l[end_str_index[k]+1:] + '\n'
+                                    else:
+                                        line_content_str = line_content_str + l[str_split_point:] + '\n'
+                            else:
+                                # 如果不是不是结尾的，就开始判断
+                                if any(right_check_str.find(j) == 1 for j in end_str):  # 检测右侧是否有不需要换行的字符
+                                    # 说明第一个开头的字符是不需要换行的
+                                    line_content_str = line_content_str + l[str_split_point:end_str_index_str]
+                                    str_split_point = end_str_index_str
+                                elif any(j in left_check_str for j in talk_str):  # 开始检查开始符左侧是否有关键字
+                                    # 如果左侧有表示说话的字符，那么就从左侧换行
+                                    line_content_str = line_content_str + '\n' + l[str_split_point:end_str_index_str] + '\n'
+                                    str_split_point = end_str_index_str
+                                else:  # 如果左侧也没有，右侧也没有，那么就一整句之间换行
+                                    line_content_str = line_content_str + '\n' + l[str_split_point:end_str_index_str]
+                                    str_split_point = end_str_index_str
+
+                    else:
+                        line_content_str = line_content_str + '\n' + l + '\n'
+                else:  # 不然，开始符和结束符的数量不一致或者压根没有开始结束符，说明数据异常，需要人工识别处理
+                    line_content_str = line_content_str + '\n' + l + '\n'
         return line_content_str.split('\n')
 
     def clear_ad_str(self, content: str) -> str:
@@ -320,8 +408,8 @@ class formatByRule():
                         string_list[right] = end_str
                         content = ''.join(string_list)
         else:
-            print('\n' + "-"*80+'')
-            print("该章节(%s)的双引号异常，存在缺失或者错误位置，请手动处理后重试" % text_title_name)
+            print('\n' + "-" * 80 + '')
+            print("该章节(%s)的双引号异常，存在缺失或者错误位置，正在自动处理，若处理无效，请手动处理" % text_title_name)
             print("-" * 80)
             for i in range(len(left_list)):
                 if len(left_list) == i + 2:
