@@ -1,12 +1,13 @@
 import re
 
+from Tools.fileOpt import fileOpt
 from Tools.textToPackage import formatContent as f
 from template.rexp_template import template
 
 
-class formatByRule():
+class formatByRuleGlobal:
     """
-    通过正则格式化小说内容
+    通过正则格式化小说内容。全局格式化处理
     """
 
     def __init__(self):
@@ -26,15 +27,18 @@ class formatByRule():
         content_list = content.split("\n")
         return content_list
 
-    def format_end_2_start_double_quotation_mark(self, content: str, text_tile_name: str = None) -> list:
+
+    def format_end_2_start_double_quotation_mark(self, content: str, text_tile_name: str = None, is_global = True) -> list:
         """
         检查双引号和开始双引号之间  例如， “xxxx”<换行>"xxxx"
+        :param is_global:
         :param text_tile_name:
         :param content:
         :return:
         """
         content = self.clear_ad_str(content)
-        content = self.fix_double_quotes(content=content, text_title_name=text_tile_name)
+        if is_global:
+            content = self.fix_double_quotes(content=content, text_title_name=text_tile_name)
         a = re.findall("”“", content)
         if len(a) > 0:
             content = re.sub('”“', '”\\n“', content)
@@ -298,7 +302,8 @@ class formatByRule():
                 end_str_index = [substr.start() for substr in re.finditer('”', l)]  # 得到所有的结束符
                 if len(start_str_index) == len(end_str_index) and len(start_str_index) > 0:  # 说明有开始结束符，且是数量相同的
                     c = lambda start_str_index, end_str_index: True if any(
-                        int(end_str_index[i]) > int(start_str_index[i]) for i in range(len(start_str_index))) else False  # 检查是不是开始符+结束符的排序
+                        int(end_str_index[i]) > int(start_str_index[i]) for i in
+                        range(len(start_str_index))) else False  # 检查是不是开始符+结束符的排序
                     if c(start_str_index=start_str_index, end_str_index=end_str_index) is True:
                         # 如是结束符的下标都大于开始符的下标，这是正确的数据
                         str_split_point = 0  # 字符串下标标记点，用于记录当前字符串已经切到那个字符
@@ -313,17 +318,24 @@ class formatByRule():
                             left_check_str: str = l[left_star_list[k][0]:left_star_list[k][1]]
                             if right_star_list[k][1] == -1:  # 到末尾了
                                 if left_star_list[k][0] == 0:
-                                    if any(right_check_str.find(j) == 1 for j in end_str) or any(j in right_check_str for j in talk_str):
+                                    if any(right_check_str.find(j) == 1 for j in end_str) or any(
+                                            j in right_check_str for j in talk_str):
                                         # 说明双引号结尾的第一个字符是不需要换行的或者这里面有表示说话的
                                         line_content_str = line_content_str + l[str_split_point:] + '\n'
                                     else:
-                                        line_content_str = line_content_str + '\n' + l[str_split_point:end_str_index[k]+1] + '\n' + l[end_str_index[k]+1:] + '\n'
+                                        line_content_str = line_content_str + '\n' + l[str_split_point:end_str_index[
+                                                                                                           k] + 1] + '\n' + l[
+                                                                                                                            end_str_index[
+                                                                                                                                k] + 1:] + '\n'
                                 else:  # 没到末尾，说明现在是倒数第二句，让我们来看看
                                     if any(left_check_str.find(j) == 1 for j in end_str):  # 检测右侧是否有不需要换行的字符
                                         line_content_str = line_content_str + l[str_split_point:] + '\n'
                                     elif any(j in left_check_str for j in talk_str):  # 开始检查开始符左侧是否有关键字
                                         # 如果左侧有表示说话的字符，那么就从左侧换行
-                                        line_content_str = line_content_str + '\n' + l[str_split_point:end_str_index[k]+1] + '\n' + l[end_str_index[k]+1:] + '\n'
+                                        line_content_str = line_content_str + '\n' + l[str_split_point:end_str_index[
+                                                                                                           k] + 1] + '\n' + l[
+                                                                                                                            end_str_index[
+                                                                                                                                k] + 1:] + '\n'
                                     else:
                                         line_content_str = line_content_str + l[str_split_point:] + '\n'
                             else:
@@ -334,7 +346,8 @@ class formatByRule():
                                     str_split_point = end_str_index_str
                                 elif any(j in left_check_str for j in talk_str):  # 开始检查开始符左侧是否有关键字
                                     # 如果左侧有表示说话的字符，那么就从左侧换行
-                                    line_content_str = line_content_str + '\n' + l[str_split_point:end_str_index_str] + '\n'
+                                    line_content_str = line_content_str + '\n' + l[
+                                                                                 str_split_point:end_str_index_str] + '\n'
                                     str_split_point = end_str_index_str
                                 else:  # 如果左侧也没有，右侧也没有，那么就一整句之间换行
                                     line_content_str = line_content_str + '\n' + l[str_split_point:end_str_index_str]
@@ -434,3 +447,85 @@ class formatByRule():
                         string_list[right] = end_str
                         content = ''.join(string_list)
         return content
+
+
+class formatByLine:
+    """
+    只在每一行的末尾检测是否有换行的标识符，如果有。保持不变，如果没有，就将下一行的文案去除左侧的换行符
+    """
+
+    def __init__(self):
+        self.fc = f()
+
+    def split_by_line_feed(self, content: str) -> list:
+        """
+        按照换行符进行数组切割
+        :return:
+        """
+        content_list = []
+        content_list_all = content.split("\n")
+        for i in content_list_all:
+            if i != "":
+                f_list = formatByRuleGlobal().format_end_2_start_double_quotation_mark(content=i, is_global=False)
+                for line in f_list:
+                    content_list.append(line)
+        return content_list
+
+    def check_line_tips(self, content: str) -> bool:
+        """
+        检查这是否是完整的一句话
+        :param content: 正文
+        :return:
+        """
+        wrap_character = ["”", "。", "，", "？", "！", '；']
+        if content.count("“") == content.count("”"):
+            if content.count("“") > 0:
+                start_str_index: list = [substr.start() for substr in re.finditer('“', content)]
+                end_str_index: list = [substr.start() for substr in re.finditer('”', content)]
+                for i in range(len(start_str_index)):
+                    if int(start_str_index[i]) > int(end_str_index[i]):
+                        """
+                        如果出现了结束符的下标小于开始符，说明换行符异常
+                        """
+                        return False
+                if any(wrap_str in content[-1:] for wrap_str in wrap_character):
+                    """
+                    如果结尾出现了表示可以结束的符号
+                    """
+                    return True
+                else:
+                    return False
+            else:
+                # 说明这里面没有双引号
+                return True
+        return False
+
+    def format_end_str(self, content_list: list) -> list:
+        """
+        检查每一行的结束是否有结束符号
+        :param content_list:
+        :return:
+        """
+        start_wrap_character = template.wrap_character_by_line.value
+        result_list: list = []
+        temp_str: str = ""  # 用于存放临时字符的
+        for line in content_list:
+            if any(wrap_str in line[-1:] for wrap_str in start_wrap_character):
+                if self.check_line_tips(temp_str + line):
+                    result_list.append(temp_str + line)
+                    temp_str = ""
+                else:
+                    temp_str = temp_str + line
+            else:
+                temp_str = temp_str + line
+        if temp_str != "":
+            # 避免出现漏网之鱼
+            result_list.append(temp_str)
+        return result_list
+
+
+if __name__ == "__main__":
+    ys = fileOpt.read_file("D:\Download\新建文件夹\origin\【班主任老婆栗琳-周末游戏】（1）.txt")  # 读取文件
+    r_list = formatByLine().split_by_line_feed(ys)
+    r_result = formatByLine().format_end_str(r_list)
+    print(r_result)

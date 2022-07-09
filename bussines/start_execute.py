@@ -1,4 +1,4 @@
-from Tools.formatText.formatContent import formatByRule
+from Tools.formatText.formatContent import formatByRuleGlobal
 
 
 class executeFormat():
@@ -8,7 +8,7 @@ class executeFormat():
     """
 
     def __init__(self):
-        self.f = formatByRule()
+        self.f = formatByRuleGlobal()
 
     # def star_format(self, content_list: list) -> list:
     #     """
