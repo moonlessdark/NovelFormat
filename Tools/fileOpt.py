@@ -3,14 +3,17 @@ import os
 import chardet
 
 from Tools.tradition import tradition2simple
+from template.rexp_template import template
 
 
 class fileOpt:
-
+    """
+    文件操作
+    """
     @staticmethod
     def read_file_path(folder_path: str):
         """
-
+        获取文件路径
         :param folder_path: txt存放的文件夹
         :return:
         """
@@ -21,17 +24,11 @@ class fileOpt:
     @staticmethod
     def read_file(file_path) -> str:
         """
-        读取单文件
+        读取text文件，进行字体转换，并清除一些垃圾字符
         :param file_path: txt文件的路径
         :return:
         """
-        error_str = ["&amp;", "x5730;", "x5740;", "x53d1;", "x5e03;", "x9875;", "xff12;", "xff55;", "xff12;", "xff55;",
-                     "xff12;", "xff55;", "xff0e;", "xff43;", "xff4f;", "xff4d;", "#x6700;", "#x65b0;", "#x627e;",
-                     "#x56de;", "#xff14;", "#xff26;", "#xff14;", "#xff26;", "#xff14;", "#xff26;", "#xff23;", "#xff2f;",
-                     "#xff2d;", "#x65B0;", "#x627E;", "#x56DE;", "#xFF14;", "#xFF26;", "#xFF14;", "#xFF26;", "#xFF14;",
-                     "#xFF26;", "#xFF0E;", "#xFF23;", "#xFF2F;", "#xFF2D;", "#x65B0;", "#x627E;", "#x56DE;",
-                     "#xFF14;", "#xFF26;", "#xFF14;", "#xFF26;", "#xFF14;", "#xFF26;", "#xFF0E;", "#xFF23;", "#xFF2F;",
-                     "#xFF2D;"]
+        error_str = template.error_str.value
         with open(file_path, "rb") as f:
             content = f.read()
         content_encode = chardet.detect(content)  # 推断一下文本内容的编码格式

@@ -69,9 +69,9 @@ class formatContent:
 
     def check_split_str_result(self, split_string, content):
         """
-        检查待处理的文本中有多少个
-        :param split_string:
-        :param content:
+        检查待处理的文本中有多少个指定的字符
+        :param split_string: 需要检查的字符
+        :param content: 文本内容
         :return:
         """
         split_right_content = content.split(split_string)
