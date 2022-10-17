@@ -2,11 +2,11 @@ import os
 
 import chardet
 
-from Tools.tradition import tradition2simple
-from template.rexp_template import template
+from novel_bussinese.Tools.tradition import tradition2simple
+from novel_bussinese.template.rexp_template import Template
 
 
-class fileOpt:
+class FileOpt:
     """
     文件操作
     """
@@ -28,7 +28,7 @@ class fileOpt:
         :param file_path: txt文件的路径
         :return:
         """
-        error_str = template.error_str.value
+        error_str = Template.error_str.value
         with open(file_path, "rb") as f:
             content = f.read()
         content_encode = chardet.detect(content)  # 推断一下文本内容的编码格式
@@ -51,16 +51,27 @@ class fileOpt:
 
     @staticmethod
     def save_txt(content, text_path: str, text_name: str):
+        text_path = text_path + '/' if '/' != text_path[-1:] else text_path
+        text_name = str(text_name)
+        text_name = text_name + ".txt" if ".txt" not in text_name else text_name
+        if len(content) > 0:
+            if type(content) == list:
+                content_str = ""
+                for i in range(len(content)):
+                    if content[i] != "":
+                        content_str = content_str + content[i] + "\r\n"
+                with open(text_path + text_name, "w+", encoding="utf-8") as f:
+                    f.write(content_str)
+            else:
+                with open(text_path + text_name, "w+", encoding="utf-8") as f:
+                    f.write(content)
 
-        if type(content) == list:
-            content_str = ""
-            for i in range(len(content)):
-                if content[i] != "":
-                    content_str = content_str + content[i] + "\r\n"
-            with open(text_path + text_name, "w+", encoding="utf-8") as f:
-                f.write(content_str)
-        else:
-            with open(text_path + text_name, "w+", encoding="utf-8") as f:
-                f.write(content)
-
+    @staticmethod
+    def tradition2simple(content: str):
+        """
+        繁转简
+        :param content:
+        :return:
+        """
+        return tradition2simple(content)
 
