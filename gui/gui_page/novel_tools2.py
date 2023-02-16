@@ -264,3 +264,5 @@ class Ui_Form(object):
         self.label_6.setText(_translate("Form", "换行"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), _translate("Form", "手动格式化"))
         self.groupBox_2.setTitle(_translate("Form", "日志信息"))
+
+        self.input_download_url.clear()

@@ -152,13 +152,17 @@ class ManualFormat(QThread):
             try:
                 if self.format_mode == "换行校验":
                     start_index: int = FormatCommon().check_double_quotes_2(self.content)
-
+                    # 还没写完
                 elif self.format_mode == "去除广告":
                     content = FormatCommon().clear_ad_str(self.content)
                 elif self.format_mode == "词语纠错":
                     pass
                 elif self.format_mode == "繁转简":
                     content = FileOpt().tradition2simple(self.content)
+                elif self.format_mode == "替换":
+                    pass
+                elif self.format_mode == "替换全部":
+                    pass
             except Exception as e:
                 self.sin_out.emit(str(e), True, True, True)
             else:

@@ -2,16 +2,19 @@ import os
 from datetime import datetime
 
 from PyQt5 import uic
+from PyQt5.QtGui import QTextDocument, QTextCursor
 from PyQt5.QtWidgets import QFileDialog, QStatusBar, QPlainTextEdit
+
 from gui.gui_th.th_download import signalThreading
 from gui.gui_th.th_format import AutoFormat, ManualFormat
-from gui.gui_page.novel_tools2 import Ui_Form
 from novel_bussinese.Tools.FileOpt import FileOpt
 
 
 class SetUI:
     def __init__(self):
         self.ui = uic.loadUi("gui/gui_page/new_main_windows.ui")
+        self.ui.manual_input_select_text.setPlaceholderText("请输入需要查询的文字")
+        self.ui.manual_input_replace_text.setPlaceholderText("请输入需要替换的文字")
 
 
 class MainWindows(SetUI):
@@ -50,6 +53,9 @@ class MainWindows(SetUI):
             self.format_manual_show_item_clicked_novel_content)  # 选中小说并显示内容
         self.ui.manual_button_save_file.clicked.connect(self.format_manual_save_item_clicked_novel_content)  # 保存修改的内容
         self.ui.manual_button_other_save_file.clicked.connect(self.format_manual_save_other_path)  # 文件另存为
+        self.ui.manual_button_execute_mode.clicked.connect(self.manual_execute)  # 执行手工处理模式
+        self.ui.manual_button_fallbace_text.clicked.connect(self.manual_reset_select)  # 重置查询条件
+        self.ui.manual_button_select_text.clicked.connect(self.manual_select_str)  # 查询文本内容
 
         # 线程链接
         self.down_novel_th.sin_out.connect(self.print_log)
@@ -93,6 +99,8 @@ class MainWindows(SetUI):
         """
         if text != "":
             self.statusbar.showMessage("  "+text)
+        else:
+            self.statusbar.showMessage("  等待执行")
 
     def down_novel_set_save_path(self):
         """
@@ -207,6 +215,7 @@ class MainWindows(SetUI):
         file_path = item_path + item.text()
         content = FileOpt().read_file(file_path)
         self.print_log(content, True, False, True)
+        self.ui.plainTextEdit.moveCursor(QTextCursor.Start)
 
     def format_manual_save_item_clicked_novel_content(self):
         """
@@ -267,3 +276,31 @@ class MainWindows(SetUI):
         if format_mode_str != "无" and content_str != "":
             self.format_th_manual.get_param(format_mode_str, content_str)
             self.format_th_manual.start()
+
+    def manual_undo(self):
+        """
+        撤回上一步操作
+        :return:
+        """
+        self.ui.plainTextEdit.undo()
+
+    def manual_reset_select(self):
+        """
+        重置查询条件
+        :return:
+        """
+        self.ui.manual_input_select_text.clear()
+        self.ui.manual_input_replace_text.clear()
+
+    def manual_select_str(self):
+        """
+        实现查询功能
+        :return:
+        """
+        content: str = self.ui.manual_input_select_text.text()
+        if content != "":
+            search_result: bool = self.ui.plainTextEdit.find(content, QTextDocument.FindFlags())
+            if search_result:
+                self.print_status_bar("  已经查询到结果")
+            else:
+                self.print_status_bar("  没有查询到结果")
