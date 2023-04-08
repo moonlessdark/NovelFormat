@@ -1,11 +1,10 @@
 # encoding:utf-8
-import re
 
 from novel_bussinese.bussines.format_mode.common import FormatCommon
 from novel_bussinese.template.rexp_template import Template
 
 
-class formatByLine:
+class FormatByLine:
     """
     只在每一行的末尾检测是否有换行的标识符，如果有。保持不变，如果没有，就将下一行的文案去除左侧的换行符
     """
@@ -25,7 +24,7 @@ class formatByLine:
             for i in range(len(content_list_all)):
                 if content_list_all[i] != "":
                     content_list.append(content_list_all[i])
-        return content_list
+        return content_list if len(content) > 0 else [content]
 
     def format_end_str(self, content_list: list) -> list:
         """
@@ -51,3 +50,7 @@ class formatByLine:
             # 避免出现漏网之鱼
             result_list.append(temp_str)
         return result_list
+
+    def format_end_str2(self, content_list: list) -> str:
+        content_list = FormatCommon().format_str_by_end_str_for_line(content_list)
+        return FormatCommon().format_merge_list(content_list)

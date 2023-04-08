@@ -1,14 +1,15 @@
 from PyQt5.QtCore import QThread, QWaitCondition, QMutex, pyqtSignal
-from novel_bussinese.bussines.get_page_content.get_by_shubao12.getPage import getNovel
+
+from novel_bussinese.bussines.get_page_content.get_by_shubao12.getPage import GetNovel
 
 
-class signalThreading(QThread):
+class SignalThreading(QThread):
     sin_out = pyqtSignal(str)
     sin_work_status = pyqtSignal(bool)
     sin_status_bar_out = pyqtSignal(str)
 
     def __init__(self):
-        super(signalThreading, self).__init__()
+        super(SignalThreading, self).__init__()
 
         self.working = True
         self.is_First_time = True
@@ -20,7 +21,7 @@ class signalThreading(QThread):
         self.down_type = ""
         self.save_novel_path = ""
 
-        self.get = getNovel(single_str=self.sin_out, single_status_bar_str=self.sin_status_bar_out)
+        self.get = GetNovel(single_str=self.sin_out, single_status_bar_str=self.sin_status_bar_out)
 
     def __del__(self):
         # 线程状态改为和线程终止

@@ -1,10 +1,11 @@
 import re
+
 from novel_bussinese.Tools.FileOpt import FileOpt
 from novel_bussinese.requestsCore import UABy
 from novel_bussinese.requestsCore.requestBy import request as req
 
 
-class getNovel:
+class GetNovel:
 
     def __init__(self, single_str, single_status_bar_str):
         """
@@ -12,7 +13,7 @@ class getNovel:
         :param single_str: 日志打印信号槽对象
         :param single_status_bar_str: 状态栏信号槽对象
         """
-        super(getNovel, self).__init__()
+        super(GetNovel, self).__init__()
         self.single_str = single_str
         self.single_status_bar_str = single_status_bar_str
         self.r = req(pyqtSignal_str=single_status_bar_str)
@@ -53,8 +54,8 @@ class getNovel:
                 data = self.r.get(index_page_url, header=UABy.user_agent.android.value, encoding="gb18030")
                 self.single_status_bar_str.emit("正在处理该章节的第 1 页")
             else:
-                data = self.r.get("https://i.shubao12.cc/" + str(next_page_url), header=UABy.user_agent.android.value,
-                                  encoding="gb18030")
+                data = self.r.get(url="https://m.shubao12.xyz" + str(next_page_url),
+                                  header=UABy.user_agent.android.value, encoding="gb18030")
                 self.single_status_bar_str.emit("正在处理该章节的第 %s 页" % self.get_page_num(next_page_url))
             if data is not None:
                 content = data.xpath("//div[@id='nr' and @class='nr_nr']/div[@id='nr1']/descendant-or-self::text()")
@@ -63,7 +64,7 @@ class getNovel:
                 title_name = data.xpath("//div[@id='nr_title']/descendant-or-self::text()")
                 try:
                     title_name = title_name[0]
-                except Exception:
+                except Exception as e:
                     self.single_str.emit("全部章节已经下载完成")
                     break
                 title_name_list = re.findall('\(第(.*?)页\)', title_name)

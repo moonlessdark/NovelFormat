@@ -1,6 +1,7 @@
 # 本模块为获取页面
 import random
 import time
+
 from lxml import etree
 from requests import Session
 from retrying import retry
@@ -12,6 +13,7 @@ class request:
     """
     二次封装
     """
+
     def __init__(self, pyqtSignal_str=None):
         super().__init__()
         self.p = None

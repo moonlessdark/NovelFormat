@@ -2,6 +2,7 @@
 import re
 
 from PyQt5.QtCore import pyqtSignal
+
 from novel_bussinese.template.rexp_template import Template
 
 
@@ -9,11 +10,13 @@ class FormatCommon:
     """
     处理格式的方法
     """
+
     def __init__(self, sin_out: pyqtSignal = None):
         """
         全局模式和单行模式公用的一些方法
         """
         self.ad_str_tuple: tuple = Template.ad_str.value
+        self.wrap_character_by_line: list = Template.wrap_character_by_line.value
         self.sin_out = sin_out
 
     def __print_pyqt_log(self, content: str):
@@ -134,8 +137,9 @@ class FormatCommon:
                 if left_list[i] < right_list[i] < left_list[i + 1]:  # 再检查一次，确认所有的字符排序都是正常的。
                     continue
                 else:
-                    self.__print_pyqt_log("该章节_" + text_title_name + "_从内容 " + content[left_list[i]:left_list[i] + 20]
-                                          + "......开始出现双引号异常情况")
+                    self.__print_pyqt_log(
+                        "该章节_" + text_title_name + "_从内容 " + content[left_list[i]:left_list[i] + 20]
+                        + "......开始出现双引号异常情况")
                     if is_fix_double_quotes:
                         return self.fix_double_quotes_check(content)
                     return content[left_list[i]:left_list[i] + 20]
@@ -281,10 +285,19 @@ class FormatCommon:
                             # 说明还是没找到
                             if i == 0:
                                 # 说明是开始循环第一遍
-                                lines_temp = lines_temp + lines[:end_str_index[i] + 1] + '\n' if star_index != -1 else lines_temp + lines[:end_str_index[i] + 1] + '\n' + lines[end_str_index[i] + 1:]
+                                lines_temp = lines_temp + lines[:end_str_index[
+                                                                     i] + 1] + '\n' if star_index != -1 else lines_temp + lines[
+                                                                                                                          :
+                                                                                                                          end_str_index[
+                                                                                                                              i] + 1] + '\n' + lines[
+                                                                                                                                               end_str_index[
+                                                                                                                                                   i] + 1:]
                             elif star_index == -1:
                                 # 说明循环到了最后面
-                                lines_temp = lines_temp + lines[end_str_index[i - 1] + 1:end_str_index[i] + 1] + '\n' + lines[end_str_index[i] + 1:]
+                                lines_temp = lines_temp + lines[
+                                                          end_str_index[i - 1] + 1:end_str_index[i] + 1] + '\n' + lines[
+                                                                                                                  end_str_index[
+                                                                                                                      i] + 1:]
                             else:
                                 lines_temp = lines_temp + lines[end_str_index[i - 1] + 1:end_str_index[i] + 1] + '\n'
                         else:
@@ -295,7 +308,9 @@ class FormatCommon:
                                                                      i] + 1] if star_index != -1 else lines_temp + lines
                             elif star_index == -1:
                                 # 说明循环到了最后面
-                                lines_temp = lines_temp + lines[end_str_index[i - 1] + 1:end_str_index[i] + 1] + lines[end_str_index[i] + 1:]
+                                lines_temp = lines_temp + lines[end_str_index[i - 1] + 1:end_str_index[i] + 1] + lines[
+                                                                                                                 end_str_index[
+                                                                                                                     i] + 1:]
                             else:
                                 lines_temp = lines_temp + lines[end_str_index[i - 1] + 1:end_str_index[i] + 1]
                     if lines_temp != "":
@@ -310,3 +325,46 @@ class FormatCommon:
             else:
                 result_list.append(lines)
         return result_list
+
+    def format_str_by_end_str_for_line(self, content: list or str) -> list:
+        """
+        单行模式，处理是否需要换行。只会判断是否需要和下一行合并，不会对当前对行进行换行。
+        若不需要换行就与下一行合并。
+        该方法只会进行简单的判断，要求待处理的内容本身没有太大的格式问题。
+        :param content: 需要处理的内容
+        :return:
+        """
+        result_list: list = []
+        temp_str: str = ""  # 临时存储一下字符
+        content_list: list = [content] if type(content) == str else content
+        for line_num in range(len(content_list)):
+            lines: str = temp_str + content_list[line_num]  # 先获取一下内容
+            if lines == "":
+                continue
+            elif any(wrap_str in lines[-1:] for wrap_str in self.wrap_character_by_line) and lines.count(
+                    "“") == lines.count("”"):
+                # 如果该行的最后一个字符是结束符，且该行有完整成对的的双引号，那说明这句话是OK的
+                left_list, right_list = self.check_double_quotes_line(lines)
+                if len(left_list) == 0:
+                    result_list.append(lines)
+                    temp_str = ""
+                    continue
+                else:
+                    if left_list[-1] < right_list[-1]:
+                        # 如果最后一个开始双引号的下标小于结束双引号，那么这句话就OK了
+                        result_list.append(lines)
+                        temp_str = ""
+                        continue
+            temp_str = lines
+        return result_list
+
+    def format_merge_list(self, content_list: list) -> str:
+        """
+        将数组合并
+        :param content_list:
+        :return:
+        """
+        content: str = ""
+        for i_str in content_list:
+            content = content + i_str + '\n'
+        return content

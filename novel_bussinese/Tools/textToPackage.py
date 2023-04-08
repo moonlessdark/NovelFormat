@@ -2,7 +2,6 @@ import re
 
 
 class formatContent:
-
     """
     对一些异常换行的数据进行重新拼接为数组
     """
@@ -48,7 +47,7 @@ class formatContent:
         """
         left_str_content = ""
         content_list_temp = content.split("\n")
-        for i in range(len(content_list_temp)-1):
+        for i in range(len(content_list_temp) - 1):
             left_str_content = left_str_content + content_list_temp[i] + '\n'
         right_str_content_temp = content_list_temp[-1]
 

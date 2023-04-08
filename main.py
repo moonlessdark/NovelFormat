@@ -1,8 +1,9 @@
 import sys
+
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QApplication, QStyleFactory
-from gui.gui_connect.new_main_connect import MainWindows
 
+from gui.gui_connect.new_main_connect2 import MainWindows
 
 if __name__ == '__main__':
     QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)

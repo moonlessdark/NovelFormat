@@ -1,7 +1,6 @@
-
 from novel_bussinese.bussines.format_mode.common import FormatCommon
 from novel_bussinese.bussines.format_mode.global_mode import FormatByGlobal2, global_mode
-from novel_bussinese.bussines.format_mode.sigle_line_mode import formatByLine
+from novel_bussinese.bussines.format_mode.sigle_line_mode import FormatByLine
 from novel_bussinese.template.rexp_template import Template
 
 
@@ -13,7 +12,7 @@ class ExecuteFormat:
     def __init__(self):
         self.f = global_mode()
         self.f2 = FormatByGlobal2()
-        self.line = formatByLine()
+        self.line = FormatByLine()
         self.m = FormatCommon()
 
     # def star_format_global_mode(self, content_list: list) -> list:

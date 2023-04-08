@@ -1,11 +1,10 @@
 from PyQt5.QtCore import QThread, QWaitCondition, QMutex, pyqtSignal
 
 from novel_bussinese.Tools.FileOpt import FileOpt
-from novel_bussinese.Tools.textToPackage import formatContent
 from novel_bussinese.bussines.action_execute.start_execute import ExecuteFormat
 from novel_bussinese.bussines.format_mode.common import FormatCommon
 from novel_bussinese.bussines.format_mode.global_mode import FormatByGlobal2
-from novel_bussinese.bussines.format_mode.sigle_line_mode import formatByLine
+from novel_bussinese.bussines.format_mode.sigle_line_mode import FormatByLine
 
 
 class AutoFormat(QThread):
@@ -76,13 +75,14 @@ class AutoFormat(QThread):
                     content = self.fm.clear_ad_str(content)  # 清理一下广告
                     title_name: str = str(file_list[i])
                     result_content: list = []
-                    ys: list = self.fm.format_end_2_start_double_quotation_mark(content=content, text_title_name=title_name)  # 先拆分2个对话之间的数据
+                    ys: list = self.fm.format_end_2_start_double_quotation_mark(content=content,
+                                                                                text_title_name=title_name)  # 先拆分2个对话之间的数据
                     if self.format_mode == "全局模式":
                         r_result = FormatByGlobal2().new_format(ys)
                         re_list = FormatByGlobal2().format_end_str(r_result)
                         result_content = self.fm.line_feed_format(re_list)
                     elif self.format_mode == "单行模式":
-                        r_list = formatByLine().split_by_line_feed(content=ys, text_title_name=title_name)  # 清理换行符
+                        r_list = FormatByLine().split_by_line_feed(content=ys, text_title_name=title_name)  # 清理换行符
                         result_content = ExecuteFormat().star_format_line_mode(r_list)
                     else:
                         self.sin_out.emit("处理模式错误，请检测代码参数是否正确")
@@ -100,6 +100,8 @@ class ManualFormat(QThread):
     """
     sin_out = pyqtSignal(str, bool, bool, bool)
     sin_work_status = pyqtSignal(bool)
+    sin_status_bar = pyqtSignal(str)
+    sin_out_information = pyqtSignal(str)
 
     def __init__(self):
         super().__init__()
@@ -108,6 +110,7 @@ class ManualFormat(QThread):
         self.is_First_time = True
         self.cond = QWaitCondition()
         self.mutex = QMutex()
+        self.fm = FormatCommon(sin_out=self.sin_out)
 
         self.content = ""
         self.format_mode = ""
@@ -150,23 +153,25 @@ class ManualFormat(QThread):
             if self.working is False:
                 return None
             try:
+                self.sin_status_bar.emit("处理中,请稍后......")
                 if self.format_mode == "换行校验":
-                    start_index: int = FormatCommon().check_double_quotes_2(self.content)
-                    # 还没写完
+                    ys: list = self.fm.format_end_2_start_double_quotation_mark(content=self.content)  # 先拆分2个对话之间的数据
+                    r_list = FormatByLine().split_by_line_feed(content=ys)  # 清理换行符
+                    content_list = FormatCommon().format_str_by_end_str_for_line(r_list)
+                    content = FormatCommon().format_merge_list(content_list)
                 elif self.format_mode == "去除广告":
                     content = FormatCommon().clear_ad_str(self.content)
                 elif self.format_mode == "词语纠错":
                     pass
                 elif self.format_mode == "繁转简":
                     content = FileOpt().tradition2simple(self.content)
-                elif self.format_mode == "替换":
-                    pass
-                elif self.format_mode == "替换全部":
-                    pass
             except Exception as e:
-                self.sin_out.emit(str(e), True, True, True)
+                # 打印异常信息
+                self.sin_out_information.emit(str(e))
             else:
+                # 如果没有触发任何异常，就饭后处理后的信息
                 self.sin_out.emit(content, True, False, True)
             finally:
+                self.sin_status_bar.emit("处理结束")
                 self.working = False
                 self.mutex.unlock()

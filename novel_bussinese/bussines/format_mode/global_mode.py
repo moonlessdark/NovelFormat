@@ -1,7 +1,6 @@
 # encoding: utf-8
 import re
 
-from novel_bussinese.Tools.FileOpt import FileOpt
 from novel_bussinese.Tools.textToPackage import formatContent as f
 from novel_bussinese.bussines.format_mode.common import FormatCommon
 from novel_bussinese.template.rexp_template import Template
@@ -330,6 +329,7 @@ class FormatByGlobal2:
     2、再根据双引号的规则，拼接出一行正文。
     3、再根据结束符号进行二次换行处理，效果比全局模式1更好
     """
+
     def __init__(self):
         self.ad_str_tuple: dict = Template.ad_str.value  # 广告字符
         self.talk_str_list: list = Template.talk_str.value  # 表示说话的字符，双引号左右2侧都有可能出现

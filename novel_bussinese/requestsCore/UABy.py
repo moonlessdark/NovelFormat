@@ -7,7 +7,7 @@ class user_agent(Enum):
               "Version/4.0 Chrome/88.0.4324.93 Mobile Safari/537.36 "
 
     ipad = "Mozilla/5.0 (iPad; CPU OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 " \
-          "Mobile/9A334 Safari/7534.48.3 "
+           "Mobile/9A334 Safari/7534.48.3 "
 
     ios = "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) " \
           "Version/13.0.3 Mobile/15E148 Safari/604.1 "
@@ -24,4 +24,3 @@ class user_agent(Enum):
 
     edge_windows = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) " \
                    "Chrome/95.0.4638.69 Safari/537.36 Edg/95.0.1020.53 "
-

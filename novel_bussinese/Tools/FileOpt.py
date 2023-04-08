@@ -10,6 +10,7 @@ class FileOpt:
     """
     文件操作
     """
+
     @staticmethod
     def read_file_path(folder_path: str):
         """
@@ -74,4 +75,3 @@ class FileOpt:
         :return:
         """
         return tradition2simple(content)
-
