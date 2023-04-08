@@ -33,10 +33,10 @@ class FileOpt:
         with open(file_path, "rb") as f:
             content = f.read()
         content_encode = chardet.detect(content)  # 推断一下文本内容的编码格式
-        if "gb" in content_encode.get("encoding"):
-            with open(file_path, encoding="gb18030") as file:
+        if "gb" in content_encode.get("encoding") or "GB" in content_encode.get("encoding"):
+            with open(file_path, encoding="gb18030", errors="ignore") as file:
                 read_content = file.read()
-        elif "Windows-1252" in content_encode.get("encoding"):
+        elif "Windows" in content_encode.get("encoding"):
             read_content = content.decode("windows-1252")
         else:
             with open(file_path, encoding="utf-8") as file:
