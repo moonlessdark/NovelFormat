@@ -51,7 +51,7 @@ class FormatCommon:
                     content = content.replace(replace_str, '')
         return content
 
-    def format_end_2_start_double_quotation_mark(self, content: str, text_title_name: str = None,
+    def format_end_2_start_double_quotation_mark(self, content: str, text_title_name: str = "",
                                                  is_fix_quotation_mark=True) -> list:
         """
         检查双引号和开始双引号之间  例如， “xxxx”<换行>"xxxx"
@@ -63,6 +63,8 @@ class FormatCommon:
         content = self.clear_ad_str(content)
         if is_fix_quotation_mark:
             content = self.check_double_quotes(content=content, text_title_name=text_title_name)
+            if content == "":
+                return []
         a = re.findall("”“", content)
         b = []
         if len(a) > 0:
@@ -90,8 +92,10 @@ class FormatCommon:
         temp_list.extend(right_list)
         temp_list.sort()  # 按照从小到大排序
 
-        if len(temp_list) % 2 != 0:  # 说明不是偶数，出现了多余的双引号
-            self.__print_pyqt_log("文本中出现了多余的双引号，自动处理会出现较大的误差，如效果不佳请手动处理")
+        if len(temp_list) % 2 != 0:
+            # 说明不是偶数，出现了多余的双引号
+            pass
+            # self.__print_pyqt_log("文本中出现了多余的双引号，自动处理会出现较大的误差，如效果不佳请手动处理")
         for i in range(len(temp_list) - 1):
             if len(temp_list) == i + 1:
                 # 如果此时已经循环到最后一个了，
@@ -114,10 +118,9 @@ class FormatCommon:
                     string_list = list(content)
                     string_list[right] = end_str
                     content = ''.join(string_list)
-
         return content
 
-    def check_double_quotes(self, content: str, text_title_name: str, is_fix_double_quotes: bool = True) -> str:
+    def check_double_quotes(self, content: str, text_title_name: str = "", is_fix_double_quotes: bool = True) -> str:
         """
         检查双引号是否正确
         :param is_fix_double_quotes: 是否尝试修复异常双引号
@@ -137,12 +140,17 @@ class FormatCommon:
                 if left_list[i] < right_list[i] < left_list[i + 1]:  # 再检查一次，确认所有的字符排序都是正常的。
                     continue
                 else:
-                    self.__print_pyqt_log(
-                        "该章节_" + text_title_name + "_从内容 " + content[left_list[i]:left_list[i] + 20]
-                        + "......开始出现双引号异常情况")
+                    tips_str: str = content[left_list[i]:left_list[i] + 20]
+                    tips_str = tips_str if tips_str[-2:] == "\n" else tips_str + "\n"
+                    if self.check_double_quotes_2(content) == 0:
+                        # 如果对话的双号不相等，说明对话的双引号有缺失，无法修复
+                        is_fix_double_quotes = False
                     if is_fix_double_quotes:
+                        self.__print_pyqt_log(
+                            "该章节" + text_title_name + "从内容:\n" + tips_str + "开始出现双引号异常情况。\n正在尝试修复")
                         return self.fix_double_quotes_check(content)
-                    return content[left_list[i]:left_list[i] + 20]
+                    self.__print_pyqt_log("该章节" + text_title_name + "从内容:\n" + tips_str + "开始出现双引号异常情况。\n请手动处理")
+                    return ""
         return content
 
     def check_double_quotes_2(self, content: str) -> int:
@@ -366,5 +374,7 @@ class FormatCommon:
         """
         content: str = ""
         for i_str in content_list:
-            content = content + i_str + '\n'
+            if " " in i_str:
+                i_str = i_str.replace(" ", "")
+            content = content + i_str + '\n\r'
         return content
