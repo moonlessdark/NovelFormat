@@ -110,7 +110,7 @@ class ManualFormat(QThread):
         self.is_First_time = True
         self.cond = QWaitCondition()
         self.mutex = QMutex()
-        self.fm = FormatCommon(sin_out=self.sin_out)
+        self.fm = FormatCommon(sin_out=self.sin_out_information)
 
         self.content = ""
         self.format_mode = ""
@@ -156,6 +156,9 @@ class ManualFormat(QThread):
                 self.sin_status_bar.emit("处理中,请稍后......")
                 if self.format_mode == "换行校验":
                     ys: list = self.fm.format_end_2_start_double_quotation_mark(content=self.content)  # 先拆分2个对话之间的数据
+                    if len(ys) == 0:
+                        # 说明无法自动进行双引号修复，直接结束，需要手动修复
+                        continue
                     r_list = FormatByLine().split_by_line_feed(content=ys)  # 清理换行符
                     content_list = FormatCommon().format_str_by_end_str_for_line(r_list)
                     content = FormatCommon().format_merge_list(content_list)
