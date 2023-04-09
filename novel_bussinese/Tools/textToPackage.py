@@ -8,7 +8,8 @@ class formatContent:
 
     is_break = False
 
-    def format_str_by_list(self, string_list: list, split_str: str, content: str):
+    @staticmethod
+    def format_str_by_list(string_list: list, split_str: str, content: str):
         result = []
         list_left = ""
         list_right = ""

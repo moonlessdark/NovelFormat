@@ -12,12 +12,12 @@ class FormatByLine:
     def __init__(self):
         self.m = FormatCommon()
 
-    def split_by_line_feed(self, content: list, text_title_name: str = None) -> list:
+    @staticmethod
+    def split_by_line_feed(content: list) -> list:
         """
         按照换行符进行数组切割
         :return:
         """
-        # f_list = self.m.format_end_2_start_double_quotation_mark(content=content, text_title_name=text_title_name)
         content_list = []
         for line in range(len(content)):
             content_list_all = content[line].split("\n")
@@ -37,7 +37,7 @@ class FormatByLine:
         temp_str: str = ""  # 用于存放临时字符的
         for line in content_list:
             if any(wrap_str in line[-1:] for wrap_str in start_wrap_character):
-                if self.m.check_line_tips(temp_str + line):
+                if self.m.check_str_is_line(temp_str + line):
                     r_list = FormatCommon().line_feed_format(temp_str + line)
                     for s in range(len(r_list)):
                         result_list.append(r_list[s])
