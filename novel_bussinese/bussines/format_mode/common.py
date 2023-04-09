@@ -74,6 +74,7 @@ class FormatCommon:
         b = []
         if len(a) > 0:
             content = re.sub('”“', '”\\n“', content)
+            content = re.sub('。“', '。\n“', content)
             content_list = content.split("\n")
             for ss in range(len(content_list)):
                 if content_list[ss] != "":
@@ -242,16 +243,19 @@ class FormatCommon:
                 for i in range(len(start_str_index)):
                     if int(start_str_index[i]) > int(end_str_index[i]):
                         """
-                        如果出现了结束符的下标小于开始符，说明换行符异常
+                        如果出现了结束符的下标小于开始符，说明换行符异常。需要进一步检测
                         """
                         return False
                 if any(wrap_str in content[-1:] for wrap_str in wrap_character):
                     """
                     如果结尾出现了表示可以结束的符号
                     """
+                    if content[:start_str_index[0]] == "" and content[end_str_index[0]+1:] == "":
+                        """
+                        如果双引号的左侧和右侧都是空，表示这句话没说完 
+                        """
+                        return False
                     return True
-                else:
-                    return False
             else:
                 # 说明这里面没有双引号
                 return True
@@ -277,7 +281,7 @@ class FormatCommon:
                         # 开始检查
                         is_find = False
                         star_index = start_str_index[i + 1] if i < int(len(start_str_index) - 1) else -1
-                        for end_str in Template.end_str.value:
+                        for end_str in Template.talk_str_by_end_double_quotes.value:
                             if star_index == -1:
                                 # -1 表示在当前的结束双引号后没有开始双引号了，这是最后一句话类。
                                 if lines[end_str_index[i]:].find(end_str) == 1:
@@ -350,7 +354,7 @@ class FormatCommon:
         return content
 
     @staticmethod
-    def __check_any_element(content: str, iterable: list[str]) -> str:
+    def check_any_element(content: str, iterable: list[str]) -> str:
         """
         检查文本中是否存在某个字符
         """
@@ -363,7 +367,7 @@ class FormatCommon:
         """
         检查某个字符是否处于文本内容的结尾处
         """
-        check_str: str = self.__check_any_element(content, iterable)
+        check_str: str = self.check_any_element(content, iterable)
         if (len(content) - len(check_str)) - content.rfind(check_str) == 0:
             return True
         return False
@@ -372,10 +376,15 @@ class FormatCommon:
         """
         检查某个字符是否处于文本内容的开始处
         """
-        check_str: str = self.__check_any_element(content, iterable)
+        check_str: str = self.check_any_element(content, iterable)
         if content.find(check_str) == 0:
             return True
         return False
+
+    def split_str_by_end_str_for_line(self, content: str):
+        """
+        根据结束双引号切一次
+        """
 
     @staticmethod
     def split_str_in_line(content: str, check_str: str, left_list:list[int], right_list: list[int]) -> str:
@@ -392,8 +401,7 @@ class FormatCommon:
         else:
             if right_num > 0:
                 # 有开始符和结束符，那就需要来判断一下了。
-                check_str_list_num: list[int] = [substr.start() for substr in
-                                             re.finditer(check_str, content)]  # 查询开始字符串所有的index
+                check_str_list_num: list[int] = [substr.start() for substr in re.finditer(check_str, content)]  # 查询开始字符串所有的index
                 for i in range(len(check_str_list_num)):
                     check_str_list: list[int] = [substr.start() for substr in re.finditer(check_str, content)]
                     right_last_num = content.rfind('”')
@@ -420,12 +428,11 @@ class FormatCommon:
         按照代表结束的标点符合再切一次
         """
         content_str = ""
+        content = self.split_by_line_feed(content)
         for line in content:
             left_list, right_list = self.check_double_quotes_left_right_str(line)
             for end_str in self.wrap_character_by_line:
                 if end_str in line:
-                    if end_str == '”':
-                        continue
                     line = self.split_str_in_line(line, end_str, left_list, right_list)
                     if self.check_end_element(line, [end_str]):
                         # 如果这个字符已经是最后一个了，那么就不换行了
@@ -470,6 +477,13 @@ class FormatCommon:
                 content = content.replace(key, self.change_str[key])
         return content
 
+    def format_end_2_start_double_quotation_mark_by_list(self, content_list: list[str]):
+        r_list: list = []
+        for cc in content_list:
+            rs = self.format_end_2_start_double_quotation_mark(content=cc)
+            r_list.extend(rs)
+        return r_list
+
 
 class WrapLine(FormatCommon):
     """
@@ -485,28 +499,46 @@ class WrapLine(FormatCommon):
         :return:
         """
         result_list: list = []
+        result_list_s:list = []
         temp_str: str = ""  # 临时存储一下字符
         content_list: list = [content] if type(content) == str else content
         for line_num in range(len(content_list)):
             lines: str = temp_str + content_list[line_num]  # 先获取一下内容
+            lines = lines.strip()  # 清楚一下前后空格
             left_list, right_list = self.check_double_quotes_left_right_str(lines)
             if lines == "":
                 continue
-            elif any(wrap_str in lines[-1:] for wrap_str in self.wrap_character_by_line) and lines.count("“") == lines.count("”"):
+            if any(wrap_str in lines[-1:] for wrap_str in self.wrap_character_by_line) and lines.count(
+                    "“") == lines.count("”"):
                 # 如果该行的最后一个字符是结束符，且该行有完整成对的的双引号，那说明这句话是OK的
                 if self.check_end_element(lines, self.wrap_character_by_line) and self.check_start_element(lines, self.wrap_character_by_line):
-                    # 如果这里这里只有一个标点符合
+                    # 如果这里这里只有一个标点符合，那就和上一句合并
                     result_list[-1] = result_list[-1] + lines
+                    result_list_s[-1] = result_list_s[-1] + lines
+                    temp_str = ""
+                    continue
+                if self.check_start_element(lines, self.talk_str_by_end_double_quotes) and self.check_start_element(result_list[-1], ['”']):
+                    # 如果这一句的开头是表示不需要结束的字符和上一句的结尾是双引号的结束符。那就和上一句合并
+                    result_list[-1] = result_list[-1] + lines
+                    result_list_s[-1] = result_list_s[-1] + lines
+                    temp_str = ""
+                    continue
+                if self.check_str_is_line(lines) is True:
+                    result_list.append(lines)
+                    result_list_s.append(lines)
+                    temp_str = ""
                     continue
                 if len(left_list) == 0:
                     result_list.append(lines)
+                    result_list_s.append(lines)
                     temp_str = ""
                     continue
                 else:
-                    if left_list[-1] < right_list[-1]:
+                    if left_list[-1] < right_list[-1] and len(left_list) > 1:
                         # 如果最后一个开始双引号的下标小于结束双引号，那么这句话就OK了
                         result_list.append(lines)
+                        result_list_s.append(lines)
                         temp_str = ""
                         continue
             temp_str = lines
-        return result_list
+        return self.format_end_2_start_double_quotation_mark_by_list(result_list)

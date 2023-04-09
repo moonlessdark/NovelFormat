@@ -69,22 +69,21 @@ class ManualFormat(QThread):
                     if len(ys) == 0:
                         # 说明无法自动进行双引号修复，直接结束，需要手动修复
                         continue
-                    r_list = FormatCommon().split_by_line_feed(content=ys)  # 按换行符进行切割，移除多余换行符
-                    r_list = FormatCommon().split_by_end_str(r_list)  # 按照结束符再切割一次
-                    content_list = WrapLine().format_str_by_end_str_for_line(r_list)
-                    content = FormatCommon().format_merge_list(content_list)
+                    r_list = FormatCommon().split_by_line_feed(ys)  # 按照结束符再切割一次
+                    content_list = WrapLine().format_str_by_end_str_for_line(r_list)  # 格式化/拼接
+                    content = FormatCommon().format_merge_list(content_list)  # 数组合并为string
                 elif self.format_mode == "换行校验(增强)":
                     ys: list = self.fm.format_end_2_start_double_quotation_mark(content=self.content)  # 先拆分2个对话之间的数据
                     if len(ys) == 0:
                         # 说明无法自动进行双引号修复，直接结束，需要手动修复
                         continue
-                    r_list = FormatCommon().split_by_line_feed(content=ys)  # 按换行符进行切割，移除多余换行符
-                    r_list = FormatCommon().split_by_end_str(r_list)  # 按照结束符再切割一次
-
+                    r_list = FormatCommon().split_by_end_str(ys)  # 按照结束符再切割一次
+                    content_list = WrapLine().format_str_by_end_str_for_line(r_list)  # 格式化/拼接
+                    content = FormatCommon().format_merge_list(content_list)  # 数组合并为string
                 elif self.format_mode == "去除广告":
                     content = FormatCommon().clear_ad_str(self.content)
                 elif self.format_mode == "词语纠错":
-                    pass
+                    content = FormatCommon().change_word(content)
                 elif self.format_mode == "繁转简":
                     content = FileOpt().tradition2simple(self.content)
             except Exception as e:
