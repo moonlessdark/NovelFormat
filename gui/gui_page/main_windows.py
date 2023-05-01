@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'new_main_windows2uuScwB.ui'
+## Form generated from reading UI file 'main_windowsfrdwXn.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.5.0
 ##
@@ -11,11 +11,10 @@
 from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
     QMetaObject, QObject, QPoint, QRect,
     QSize, QTime, QUrl, Qt)
-from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
-    QCursor, QFont, QFontDatabase, QGradient,
-    QIcon, QImage, QKeySequence, QLinearGradient,
-    QPainter, QPalette, QPixmap, QRadialGradient,
-    QTransform)
+from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
+    QFont, QFontDatabase, QGradient, QIcon,
+    QImage, QKeySequence, QLinearGradient, QPainter,
+    QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QComboBox, QFrame, QLabel,
     QLineEdit, QListWidget, QListWidgetItem, QMainWindow,
     QPlainTextEdit, QPushButton, QSizePolicy, QStatusBar,
@@ -28,12 +27,6 @@ class Ui_MainWindow(object):
         MainWindow.resize(700, 600)
         MainWindow.setMinimumSize(QSize(700, 600))
         MainWindow.setMaximumSize(QSize(700, 600))
-        self.actionOpenFile = QAction(MainWindow)
-        self.actionOpenFile.setObjectName(u"actionOpenFile")
-        self.actionSaveFile = QAction(MainWindow)
-        self.actionSaveFile.setObjectName(u"actionSaveFile")
-        self.actionSaveFileOthorPath = QAction(MainWindow)
-        self.actionSaveFileOthorPath.setObjectName(u"actionSaveFileOthorPath")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.tabWidget = QTabWidget(self.centralwidget)
@@ -41,16 +34,16 @@ class Ui_MainWindow(object):
         self.tabWidget.setGeometry(QRect(10, 10, 680, 141))
         self.tab = QWidget()
         self.tab.setObjectName(u"tab")
-        self.save_novel_path_by_page = QLineEdit(self.tab)
-        self.save_novel_path_by_page.setObjectName(u"save_novel_path_by_page")
-        self.save_novel_path_by_page.setGeometry(QRect(260, 70, 171, 22))
-        self.pushButton = QPushButton(self.tab)
-        self.pushButton.setObjectName(u"pushButton")
-        self.pushButton.setGeometry(QRect(181, 65, 71, 32))
+        self.input_save_novel_path_by_page = QLineEdit(self.tab)
+        self.input_save_novel_path_by_page.setObjectName(u"input_save_novel_path_by_page")
+        self.input_save_novel_path_by_page.setGeometry(QRect(260, 70, 171, 22))
+        self.down_button_save_path = QPushButton(self.tab)
+        self.down_button_save_path.setObjectName(u"down_button_save_path")
+        self.down_button_save_path.setGeometry(QRect(181, 65, 71, 32))
         font = QFont()
         font.setFamilies([u"Arial"])
         font.setPointSize(13)
-        self.pushButton.setFont(font)
+        self.down_button_save_path.setFont(font)
         self.button_download_start_executr = QPushButton(self.tab)
         self.button_download_start_executr.setObjectName(u"button_download_start_executr")
         self.button_download_start_executr.setGeometry(QRect(480, 40, 71, 32))
@@ -61,20 +54,20 @@ class Ui_MainWindow(object):
         self.select_download_type.setObjectName(u"select_download_type")
         self.select_download_type.setGeometry(QRect(221, 10, 135, 25))
         self.select_download_type.setFont(font)
-        self.label_2 = QLabel(self.tab)
-        self.label_2.setObjectName(u"label_2")
-        self.label_2.setGeometry(QRect(161, 12, 52, 19))
-        self.label_2.setFont(font)
+        self.label_down_website = QLabel(self.tab)
+        self.label_down_website.setObjectName(u"label_down_website")
+        self.label_down_website.setGeometry(QRect(161, 12, 52, 19))
+        self.label_down_website.setFont(font)
         self.select_download_mode = QComboBox(self.tab)
         self.select_download_mode.addItem("")
         self.select_download_mode.addItem("")
         self.select_download_mode.setObjectName(u"select_download_mode")
         self.select_download_mode.setGeometry(QRect(360, 10, 102, 25))
         self.select_download_mode.setFont(font)
-        self.label_3 = QLabel(self.tab)
-        self.label_3.setObjectName(u"label_3")
-        self.label_3.setGeometry(QRect(190, 41, 52, 19))
-        self.label_3.setFont(font)
+        self.label_down_file_path = QLabel(self.tab)
+        self.label_down_file_path.setObjectName(u"label_down_file_path")
+        self.label_down_file_path.setGeometry(QRect(190, 41, 52, 19))
+        self.label_down_file_path.setFont(font)
         self.input_download_url = QLineEdit(self.tab)
         self.input_download_url.setObjectName(u"input_download_url")
         self.input_download_url.setGeometry(QRect(260, 41, 171, 22))
@@ -124,23 +117,23 @@ class Ui_MainWindow(object):
         self.manual_button_replace_text_all = QPushButton(self.tab_3)
         self.manual_button_replace_text_all.setObjectName(u"manual_button_replace_text_all")
         self.manual_button_replace_text_all.setGeometry(QRect(570, 73, 83, 32))
-        self.widget = QWidget(self.tab_3)
-        self.widget.setObjectName(u"widget")
-        self.widget.setGeometry(QRect(240, 0, 88, 106))
-        self.verticalLayout = QVBoxLayout(self.widget)
+        self.layoutWidget = QWidget(self.tab_3)
+        self.layoutWidget.setObjectName(u"layoutWidget")
+        self.layoutWidget.setGeometry(QRect(240, 0, 88, 106))
+        self.verticalLayout = QVBoxLayout(self.layoutWidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
-        self.manual_button_get_file_list = QPushButton(self.widget)
+        self.manual_button_get_file_list = QPushButton(self.layoutWidget)
         self.manual_button_get_file_list.setObjectName(u"manual_button_get_file_list")
 
         self.verticalLayout.addWidget(self.manual_button_get_file_list)
 
-        self.manual_button_save_file = QPushButton(self.widget)
+        self.manual_button_save_file = QPushButton(self.layoutWidget)
         self.manual_button_save_file.setObjectName(u"manual_button_save_file")
 
         self.verticalLayout.addWidget(self.manual_button_save_file)
 
-        self.manual_button_other_save_file = QPushButton(self.widget)
+        self.manual_button_other_save_file = QPushButton(self.layoutWidget)
         self.manual_button_other_save_file.setObjectName(u"manual_button_other_save_file")
 
         self.verticalLayout.addWidget(self.manual_button_other_save_file)
@@ -172,20 +165,17 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"NovelEditTools", None))
-        self.actionOpenFile.setText(QCoreApplication.translate("MainWindow", u"OpenFile", None))
-        self.actionSaveFile.setText(QCoreApplication.translate("MainWindow", u"SaveFile", None))
-        self.actionSaveFileOthorPath.setText(QCoreApplication.translate("MainWindow", u"SaveFileOthorPath", None))
-        self.pushButton.setText(QCoreApplication.translate("MainWindow", u"\u4fdd\u5b58\u76ee\u5f55", None))
+        self.down_button_save_path.setText(QCoreApplication.translate("MainWindow", u"\u4fdd\u5b58\u76ee\u5f55", None))
         self.button_download_start_executr.setText(QCoreApplication.translate("MainWindow", u"\u5f00\u59cb\u4e0b\u8f7d", None))
         self.select_download_type.setItemText(0, QCoreApplication.translate("MainWindow", u"shubao12.com", None))
         self.select_download_type.setItemText(1, QCoreApplication.translate("MainWindow", u"tmallyh.top", None))
         self.select_download_type.setItemText(2, QCoreApplication.translate("MainWindow", u"aastory.space", None))
 
-        self.label_2.setText(QCoreApplication.translate("MainWindow", u"\u4e0b\u8f7d\u7f51\u7ad9", None))
+        self.label_down_website.setText(QCoreApplication.translate("MainWindow", u"\u4e0b\u8f7d\u7f51\u7ad9", None))
         self.select_download_mode.setItemText(0, QCoreApplication.translate("MainWindow", u"\u6279\u91cf\u4e0b\u8f7d", None))
         self.select_download_mode.setItemText(1, QCoreApplication.translate("MainWindow", u"\u5355\u7ae0\u4e0b\u8f7d", None))
 
-        self.label_3.setText(QCoreApplication.translate("MainWindow", u"\u4e0b\u8f7d\u5730\u5740", None))
+        self.label_down_file_path.setText(QCoreApplication.translate("MainWindow", u"\u4e0b\u8f7d\u5730\u5740", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("MainWindow", u"\u7f51\u9875\u4e0b\u8f7d", None))
         self.label_5.setText(QCoreApplication.translate("MainWindow", u"\u5904\u7406\u6a21\u5f0f", None))
         self.manual_button_execute_mode.setText(QCoreApplication.translate("MainWindow", u"\u6267\u884c", None))

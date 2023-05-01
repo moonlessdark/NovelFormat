@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 
+from PySide6.QtCore import QSize, QRect
 from PySide6.QtGui import QTextCursor, QTextDocument
 from PySide6.QtWidgets import QMainWindow, QStatusBar, QMessageBox, QPlainTextEdit, QFileDialog
 
@@ -22,11 +23,72 @@ class SetUIPyside(Ui_MainWindow, QMainWindow):
         self.statusbar.showMessage(" 等待执行")
 
         # 给一些元素进行初始化赋值
+        self.tabWidget.setCurrentIndex(1)  # 设置打开时默认的选项tab
+        self.set_ui()
+
         self.manual_input_select_text.setPlaceholderText("请输入需要查询的文字")
         self.manual_input_replace_text.setPlaceholderText("请输入需要替换的文字")
 
         # 一些元素的初始化
         self.plainTextEdit.setReadOnly(True)  # 日志打印默认为只读模式
+        self.tabWidget.currentChanged.connect(self.set_ui)
+
+    def set_ui(self):
+        if self.tabWidget.currentIndex() == 0:
+            self.set_ui_down_text()
+        else:
+            self.set_ui_text_format()
+
+    def set_ui_down_text(self):
+        """
+        设置下载小说的界面UI布局
+        """
+        QMainWindow.setFixedSize(self, QSize(400, 350))
+        self.tabWidget.setGeometry(QRect(10, 10, 390, 130))
+        self.input_save_novel_path_by_page.setGeometry(QRect(90, 70, 171, 22))
+        self.down_button_save_path.setGeometry(QRect(10, 65, 71, 32))
+        self.button_download_start_executr.setGeometry(QRect(280, 60, 81, 32))
+        self.select_download_type.setGeometry(QRect(90, 10, 171, 25))
+        self.label_down_website.setGeometry(QRect(10, 12, 52, 19))
+        self.select_download_mode.setGeometry(QRect(270, 20, 102, 25))
+        self.label_down_file_path.setGeometry(QRect(10, 41, 52, 19))
+        self.input_download_url.setGeometry(QRect(90, 41, 171, 22))
+        # 以下是日志打印相关
+        self.label.setGeometry(QRect(10, 150, 60, 16))
+        self.line.setGeometry(QRect(70, 150, 330, 16))
+        self.plainTextEdit.setGeometry(QRect(10, 170, 383, 161))
+        self.windows_center()
+
+    def set_ui_text_format(self):
+        """
+        设置格式化小说的UI界面
+        """
+        QMainWindow.setFixedSize(self, QSize(700, 600))
+        self.tabWidget.setGeometry(QRect(10, 10, 680, 141))
+        self.manual_file_item_list.setGeometry(QRect(15, 0, 211, 100))
+        self.label_5.setGeometry(QRect(360, 6, 53, 21))
+        self.manual_button_execute_mode.setGeometry(QRect(590, 0, 57, 32))
+        self.manual_comboBox_select_format_mode.setGeometry(QRect(420, 3, 130, 28))
+        self.line_2.setGeometry(QRect(330, 0, 15, 100))
+        self.line_3.setGeometry(QRect(337, 30, 321, 20))
+        self.manual_input_select_text.setGeometry(QRect(350, 46, 150, 22))
+        self.manual_input_replace_text.setGeometry(QRect(510, 46, 150, 22))
+        self.manual_button_select_text.setGeometry(QRect(360, 73, 57, 32))
+        self.manual_button_replace_text.setGeometry(QRect(500, 73, 57, 32))
+        self.manual_button_replace_text_all.setGeometry(QRect(570, 73, 83, 32))
+        self.layoutWidget.setGeometry(QRect(240, 0, 88, 106))
+        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
+        # 以下是日志打印相关
+        self.label.setGeometry(QRect(10, 160, 60, 16))
+        self.line.setGeometry(QRect(70, 160, 620, 16))
+        self.plainTextEdit.setGeometry(QRect(10, 182, 680, 391))
+        self.windows_center()
+
+    def windows_center(self):
+        qr = self.frameGeometry()
+        cp = self.screen().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
 
     @staticmethod
     def print_information(error_str):
@@ -70,7 +132,7 @@ class MainWindows:
         self.file_items_dict: dict = {}  # 手动格式化时读取的小说列表
 
         # 下载小说
-        self.ui.pushButton.clicked.connect(self.down_novel_set_save_path)  # 设置下载后的保存目录
+        self.ui.down_button_save_path.clicked.connect(self.down_novel_set_save_path)  # 设置下载后的保存目录
         self.ui.button_download_start_executr.clicked.connect(self.down_novel_execute)  # 开始下载
 
         # 手动格式化
@@ -136,7 +198,7 @@ class MainWindows:
         """
         save_novel_path: str = QFileDialog.getExistingDirectory(None, '设置保存目录', os.getcwd())
         if save_novel_path != "":
-            self.ui.save_novel_path_by_page.setText(save_novel_path)
+            self.ui.input_save_novel_path_by_page.setText(save_novel_path)
             self.print_log("目录设置为：%s " % save_novel_path, is_clear=True, is_line_wrap=True, is_date=False)
 
     def down_novel_execute(self):
@@ -155,11 +217,11 @@ class MainWindows:
             self.print_log("还未设置爬虫模板", is_clear=True, is_date=False)
         elif down_type == "":
             self.print_log("还未设置下载模式", is_clear=True, is_date=False)
-        elif self.ui.save_novel_path_by_page.text() == "":
+        elif self.ui.input_save_novel_path_by_page.text() == "":
             self.print_log("还未设置保存的目录", is_clear=True, is_date=False)
         else:
             self.down_novel_th.get_param(down_url=down_url, down_mode=down_mode, down_type=down_type,
-                                         save_novel_path=self.ui.save_novel_path_by_page.text() + '/')
+                                         save_novel_path=self.ui.input_save_novel_path_by_page.text() + '/')
             self.down_novel_th.start()
 
     # def format_auto_set_origin_file_path(self):
