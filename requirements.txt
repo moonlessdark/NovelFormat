@@ -1,6 +1,6 @@
-chardet~=4.0.0
+chardet
 zhconv~=1.4.3
 requests
 lxml
 retrying
-PyQt5
+PySide6

@@ -1,7 +1,7 @@
 # encoding: utf-8
 import re
 
-from PyQt5.QtCore import pyqtSignal
+from PySide6.QtCore import Signal
 
 from novel_bussinese.template.rexp_template import Template
 
@@ -11,7 +11,7 @@ class FormatCommon:
     处理格式的方法
     """
 
-    def __init__(self, sin_out: pyqtSignal = None):
+    def __init__(self, sin_out: Signal = None):
         """
         全局模式和单行模式公用的一些方法
         """

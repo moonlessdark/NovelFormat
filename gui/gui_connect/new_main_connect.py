@@ -1,38 +1,37 @@
 import os
-import time
 from datetime import datetime
-from time import strftime, localtime
 
-from PyQt5 import uic
-from PyQt5.QtGui import QTextDocument, QTextCursor
-from PyQt5.QtWidgets import QFileDialog, QStatusBar, QPlainTextEdit, QMessageBox
+from PySide6.QtGui import QTextCursor, QTextDocument
+from PySide6.QtWidgets import QMainWindow, QStatusBar, QMessageBox, QPlainTextEdit, QFileDialog
 
+from gui.gui_page.main_windows import Ui_MainWindow
 from gui.gui_th.th_download import SignalThreading
 from gui.gui_th.th_format import ManualFormat
 from novel_bussinese.Tools.FileOpt import FileOpt
 
 
-class SetUI:
+class SetUIPyside(Ui_MainWindow, QMainWindow):
+
     def __init__(self):
-        self.ui = uic.loadUi("gui/gui_page/new_main_windows2.ui")
+        super().__init__()
+        self.setupUi(self)
 
         # 底部加一个statusbar组件，用于显示一些进度状态
         self.statusbar = QStatusBar()
-        self.ui.setStatusBar(self.statusbar)
+        self.setStatusBar(self.statusbar)
         self.statusbar.showMessage(" 等待执行")
 
         # 给一些元素进行初始化赋值
-        self.ui.manual_input_select_text.setPlaceholderText("请输入需要查询的文字")
-        self.ui.manual_input_replace_text.setPlaceholderText("请输入需要替换的文字")
+        self.manual_input_select_text.setPlaceholderText("请输入需要查询的文字")
+        self.manual_input_replace_text.setPlaceholderText("请输入需要替换的文字")
 
         # 一些元素的初始化
-        self.ui.plainTextEdit.setReadOnly(True)  # 日志打印默认为只读模式
+        self.plainTextEdit.setReadOnly(True)  # 日志打印默认为只读模式
 
     @staticmethod
-    def print_information(error_str, message_type: QMessageBox = QMessageBox.Warning):
+    def print_information(error_str):
         """
         用于弹窗信息
-        :param message_type:
         :param error_str:
         :return:
         """
@@ -46,23 +45,23 @@ class SetUI:
         # message.setInformativeText("出现啦错误信息")
         # 控制消息框类型以改变图标
         # message.setIcon(QMessageBox.Warning)
-        message.setIcon(message_type)
-        message.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        # message.setIcon(message_type)
+        message.setStandardButtons(QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel)
         # 设置默认按钮，会被默认打开或突出显示
-        message.setDefaultButton(QMessageBox.Ok)
+        message.setDefaultButton(QMessageBox.StandardButton.Ok)
         # 将消息框弹出，返回用户的选择
         ret = message.exec()
-        if ret == QMessageBox.Ok:
+        if ret == QMessageBox.StandardButton.Ok:
             pass
         else:
             pass
 
 
-class MainWindows(SetUI):
+class MainWindows:
 
     def __init__(self):
-        super(MainWindows, self).__init__()
-
+        # super(MainWindows, self).__init__()
+        self.ui = SetUIPyside()
         # 初始化一些类
         self.down_novel_th = SignalThreading()
         self.format_th_manual = ManualFormat()
@@ -90,7 +89,7 @@ class MainWindows(SetUI):
         self.down_novel_th.sin_status_bar_out.connect(self.print_status_bar)
         self.format_th_manual.sin_out.connect(self.print_log)
         self.format_th_manual.sin_status_bar.connect(self.print_status_bar)
-        self.format_th_manual.sin_out_information.connect(self.print_information)
+        # self.format_th_manual.sin_out_information.connect(self.print_log)
 
     def print_log(self, content: str, is_clear: bool = False, is_date: bool = True, is_edit: bool = False,
                   is_line_wrap: bool = False):
@@ -109,9 +108,9 @@ class MainWindows(SetUI):
             if is_date:
                 content = str(datetime.now().strftime("%H时%M分%S秒=>")) + content
             if is_line_wrap:
-                self.ui.plainTextEdit.setLineWrapMode(QPlainTextEdit.WidgetWidth)  # 日志自动换行显示
+                self.ui.plainTextEdit.setLineWrapMode(QPlainTextEdit.LineWrapMode.WidgetWidth)  # 日志自动换行显示
             if is_line_wrap is False:
-                self.ui.plainTextEdit.setLineWrapMode(QPlainTextEdit.NoWrap)  # 去除日志打印的自动换行
+                self.ui.plainTextEdit.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)  # 去除日志打印的自动换行
             if is_edit:
                 self.ui.plainTextEdit.setReadOnly(False)
             if is_edit is False:
@@ -126,9 +125,9 @@ class MainWindows(SetUI):
         """
         # time_str: str = strftime("%H:%M:%S", localtime())
         if text != "":
-            self.statusbar.showMessage("  " + text)
+            self.ui.statusbar.showMessage("  " + text)
         else:
-            self.statusbar.showMessage("等待执行")
+            self.ui.statusbar.showMessage("等待执行")
 
     def down_novel_set_save_path(self):
         """
@@ -163,45 +162,43 @@ class MainWindows(SetUI):
                                          save_novel_path=self.ui.save_novel_path_by_page.text() + '/')
             self.down_novel_th.start()
 
-    def format_auto_set_origin_file_path(self):
-        """
-        设置格式化的源文件目录
-        :return:
-        """
-        save_novel_path = QFileDialog.getExistingDirectory(None, '设置源文件目录', os.getcwd())
-        self.ui.line_format_orgin_file_path.setText(save_novel_path + '/')
-        self.print_log("目录设置为：%s " % save_novel_path, is_clear=True, is_date=False)
+    # def format_auto_set_origin_file_path(self):
+    #     """
+    #     设置格式化的源文件目录
+    #     :return:
+    #     """
+    #     save_novel_path = QFileDialog.getExistingDirectory(None, '设置源文件目录', os.getcwd())
+    #     self.ui.line_format_orgin_file_path.setText(save_novel_path + '/')
+    #     self.print_log("目录设置为：%s " % save_novel_path, is_clear=True, is_date=False)
 
-    def format_auto_set_result_file_path(self):
-        """
-        设置格式化后的存储的目录
-        :return:
-        """
-        save_novel_path = QFileDialog.getExistingDirectory(None, '设置结果文件目录', os.getcwd())
-        self.ui.line_format_result_file_path.setText(save_novel_path + '/')
-        self.print_log("目录设置为：%s " % save_novel_path, is_clear=True, is_date=False)
+    # def format_auto_set_result_file_path(self):
+    #     """
+    #     设置格式化后的存储的目录
+    #     :return:
+    #     """
+    #     save_novel_path = QFileDialog.getExistingDirectory(None, '设置结果文件目录', os.getcwd())
+    #     self.ui.line_format_result_file_path.setText(save_novel_path + '/')
+    #     self.print_log("目录设置为：%s " % save_novel_path, is_clear=True, is_date=False)
 
-    def format_auto_button_status(self, execute_status: bool):
-        """
-        开始执行按钮的显示状态处理
-        :param execute_status: 线程是否在执行中
-        :return:
-        """
-        if execute_status:
-            self.ui.button_download_start_executr.setEnabled(False)
-            self.ui.button_format_start_execute.setEnabled(False)
-        else:
-            self.ui.button_download_start_executr.setEnabled(True)
-            self.ui.button_format_start_execute.setEnabled(True)
+    # def format_auto_button_status(self, execute_status: bool):
+    #     """
+    #     开始执行按钮的显示状态处理
+    #     :param execute_status: 线程是否在执行中
+    #     :return:
+    #     """
+    #     if execute_status:
+    #         self.ui.button_download_start_executr.setEnabled(False)
+    #         self.ui.button_format_start_execute.setEnabled(False)
+    #     else:
+    #         self.ui.button_download_start_executr.setEnabled(True)
+    #         self.ui.button_format_start_execute.setEnabled(True)
 
     def format_manual_get_file_items(self):
         """
         获取小说文件夹下的小说列表
         :return:
         """
-        file_items_tuple: tuple[list[str], str] = QFileDialog.getOpenFileNames(None, "请选择需要处理的文件",
-                                                                               os.getcwd(),
-                                                                               "Text Files(*.txt)")
+        file_items_tuple: tuple[list[str], str] = QFileDialog.getOpenFileNames(None, caption="请选择需要处理的文件", dir=os.getcwd(), selectedFilter="Images (*.png *.xpm *.jpg);;Text files (*.txt);;XML files (*.xml)")
         file_items = file_items_tuple[0]
         if len(file_items) > 0:
             self.file_items_dict = {}
@@ -258,21 +255,21 @@ class MainWindows(SetUI):
         else:
             self.print_log("还未选中需要另存的文件", is_clear=True)
 
-    def reset_select_mode_item_format(self):
-        """
-        2个下拉框进行关联，选中其中一个就重置另一个
-        :return:
-        """
-        if self.ui.manual_comboBox_select_format_mode.currentText() != "无":
-            self.ui.manual_comboBox_select_change_line_mode.setCurrentIndex(0)
+    # def reset_select_mode_item_format(self):
+    #     """
+    #     2个下拉框进行关联，选中其中一个就重置另一个
+    #     :return:
+    #     """
+    #     if self.ui.manual_comboBox_select_format_mode.currentText() != "无":
+    #         self.ui.manual_comboBox_select_change_line_mode.setCurrentIndex(0)
 
-    def reset_select_mode_item_change_line(self):
-        """
-        2个下拉框进行关联，选中其中一个就重置另一个
-        :return:
-        """
-        if self.ui.manual_comboBox_select_change_line_mode.currentText() != "无":
-            self.ui.manual_comboBox_select_format_mode.setCurrentIndex(0)
+    # def reset_select_mode_item_change_line(self):
+    #     """
+    #     2个下拉框进行关联，选中其中一个就重置另一个
+    #     :return:
+    #     """
+    #     if self.ui.manual_comboBox_select_change_line_mode.currentText() != "无":
+    #         self.ui.manual_comboBox_select_format_mode.setCurrentIndex(0)
 
     def manual_execute(self):
         """
@@ -323,9 +320,9 @@ class MainWindows(SetUI):
         replace_str: str = self.ui.manual_input_replace_text.text()
         content: str = self.ui.plainTextEdit.toPlainText()
         if select_str == "":
-            self.print_information("查询条件不能为空")
+            self.ui.print_information("查询条件不能为空")
         elif content == "":
-            self.print_information("还未加载待处理的内容")
+            self.ui.print_information("还未加载待处理的内容")
         else:
             selected_str: str = self.ui.plainTextEdit.textCursor().selectedText()  # 已经被光标选中的字符
             if selected_str == select_str:
@@ -344,9 +341,9 @@ class MainWindows(SetUI):
         replace_str: str = self.ui.manual_input_replace_text.text()
         content: str = self.ui.plainTextEdit.toPlainText()
         if select_str == "":
-            self.print_information("查询条件不能为空")
+            self.ui.print_information("查询条件不能为空")
         elif content == "":
-            self.print_information("还未加载待处理的内容")
+            self.ui.print_information("还未加载待处理的内容")
         else:
             content = content.replace(select_str, replace_str)
             self.ui.plainTextEdit.clear()

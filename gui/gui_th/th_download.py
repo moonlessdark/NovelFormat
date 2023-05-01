@@ -1,12 +1,12 @@
-from PyQt5.QtCore import QThread, QWaitCondition, QMutex, pyqtSignal
+from PySide6.QtCore import QThread, QWaitCondition, QMutex, Signal
 
 from novel_bussinese.bussines.get_page_content.get_by_shubao12.getPage import GetNovel
 
 
 class SignalThreading(QThread):
-    sin_out = pyqtSignal(str)
-    sin_work_status = pyqtSignal(bool)
-    sin_status_bar_out = pyqtSignal(str)
+    sin_out = Signal(str)
+    sin_work_status = Signal(bool)
+    sin_status_bar_out = Signal(str)
 
     def __init__(self):
         super(SignalThreading, self).__init__()

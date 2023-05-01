@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QThread, QWaitCondition, QMutex, pyqtSignal
+from PySide6.QtCore import QThread, QWaitCondition, QMutex, Signal
 
 from novel_bussinese.Tools.FileOpt import FileOpt
 from novel_bussinese.bussines.format_mode.common import FormatCommon, WrapLine
@@ -8,10 +8,10 @@ class ManualFormat(QThread):
     """
     手动格式化
     """
-    sin_out = pyqtSignal(str, bool, bool, bool)
-    sin_work_status = pyqtSignal(bool)
-    sin_status_bar = pyqtSignal(str)
-    sin_out_information = pyqtSignal(str)
+    sin_out = Signal(str, bool, bool, bool)
+    sin_work_status = Signal(bool)
+    sin_status_bar = Signal(str)
+    sin_out_information = Signal(str)
 
     def __init__(self):
         super().__init__()
