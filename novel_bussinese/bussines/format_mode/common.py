@@ -11,7 +11,7 @@ class FormatCommon:
     处理格式的方法
     """
 
-    def __init__(self, sin_out: Signal = None):
+    def __init__(self, sin_out: Signal = None, sin_out_status_bar: Signal = None):
         """
         全局模式和单行模式公用的一些方法
         """
@@ -22,15 +22,17 @@ class FormatCommon:
         self.talk_str_by_end_double_quotes: list[str] = Template.talk_str_by_end_double_quotes.value
         self.change_str: dict = Template.change_str.value
         self.sin_out = sin_out
+        self.sin_out_status_bar = sin_out_status_bar
 
-    def __print_pyqt_log(self, content: str):
+    @staticmethod
+    def print_pyqt_log(signal: Signal, content: str):
         """
         打印pyqt5的log
+        :param signal: 打印日志的对象
         :param content: 打印的日志信息
         :return:
         """
-        if self.sin_out is not None:
-            self.sin_out.emit(content)
+        signal.emit(content)
 
     def clear_ad_str(self, content: str) -> str:
         """
@@ -147,10 +149,10 @@ class FormatCommon:
                         # 左右双引号的数量异常，即开始的双引号数量不等于结束的双引号数量
                         is_fix_double_quotes = False
                     if is_fix_double_quotes:
-                        self.__print_pyqt_log(
+                        self.print_pyqt_log(self.sin_out,
                             "该章节" + text_title_name + "从内容:\n" + tips_str + "开始出现双引号异常情况。\n正在尝试修复")
                         return self.fix_double_quotes_check(content)
-                    self.__print_pyqt_log(
+                    self.print_pyqt_log(self.sin_out,
                         "该章节" + text_title_name + "从内容:\n" + tips_str + "开始出现双引号异常情况。\n请手动处理")
                     return ""
         return content
@@ -428,7 +430,6 @@ class FormatCommon:
         按照代表结束的标点符合再切一次
         """
         content_str = ""
-        content = self.split_by_line_feed(content)
         for line in content:
             left_list, right_list = self.check_double_quotes_left_right_str(line)
             for end_str in self.wrap_character_by_line:

@@ -1,4 +1,5 @@
 import os
+import time
 from datetime import datetime
 
 from PySide6.QtCore import QSize, QRect
@@ -28,6 +29,10 @@ class SetUIPyside(Ui_MainWindow, QMainWindow):
 
         self.manual_input_select_text.setPlaceholderText("请输入需要查询的文字")
         self.manual_input_replace_text.setPlaceholderText("请输入需要替换的文字")
+        self.input_save_novel_path_by_page.setReadOnly(True)
+        self.input_download_url.setClearButtonEnabled(True)
+        self.manual_input_select_text.setClearButtonEnabled(True)
+        self.manual_input_replace_text.setClearButtonEnabled(True)
 
         # 一些元素的初始化
         self.plainTextEdit.setReadOnly(True)  # 日志打印默认为只读模式
@@ -56,7 +61,7 @@ class SetUIPyside(Ui_MainWindow, QMainWindow):
         # 以下是日志打印相关
         self.label.setGeometry(QRect(10, 150, 60, 16))
         self.line.setGeometry(QRect(70, 150, 330, 16))
-        self.plainTextEdit.setGeometry(QRect(10, 170, 383, 161))
+        self.plainTextEdit.setGeometry(QRect(10, 170, 382, 153))
         self.windows_center()
 
     def set_ui_text_format(self):
@@ -71,11 +76,11 @@ class SetUIPyside(Ui_MainWindow, QMainWindow):
         self.manual_comboBox_select_format_mode.setGeometry(QRect(420, 3, 130, 28))
         self.line_2.setGeometry(QRect(330, 0, 15, 100))
         self.line_3.setGeometry(QRect(337, 30, 321, 20))
-        self.manual_input_select_text.setGeometry(QRect(350, 46, 150, 22))
-        self.manual_input_replace_text.setGeometry(QRect(510, 46, 150, 22))
-        self.manual_button_select_text.setGeometry(QRect(360, 73, 57, 32))
-        self.manual_button_replace_text.setGeometry(QRect(500, 73, 57, 32))
-        self.manual_button_replace_text_all.setGeometry(QRect(570, 73, 83, 32))
+        self.manual_input_select_text.setGeometry(QRect(358, 50, 140, 22))
+        self.manual_input_replace_text.setGeometry(QRect(358, 77, 140, 22))
+        self.manual_button_select_text.setGeometry(QRect(510, 45, 57, 32))
+        self.manual_button_replace_text.setGeometry(QRect(510, 73, 57, 32))
+        self.manual_button_replace_text_all.setGeometry(QRect(570, 73, 80, 32))
         self.layoutWidget.setGeometry(QRect(240, 0, 88, 106))
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         # 以下是日志打印相关
@@ -106,13 +111,14 @@ class SetUIPyside(Ui_MainWindow, QMainWindow):
         # 设置信息性文字
         # message.setInformativeText("出现啦错误信息")
         # 控制消息框类型以改变图标
-        # message.setIcon(QMessageBox.Warning)
-        # message.setIcon(message_type)
+        message.setIcon(QMessageBox.Icon.NoIcon)
         message.setStandardButtons(QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel)
         # 设置默认按钮，会被默认打开或突出显示
         message.setDefaultButton(QMessageBox.StandardButton.Ok)
+
         # 将消息框弹出，返回用户的选择
         ret = message.exec()
+
         if ret == QMessageBox.StandardButton.Ok:
             pass
         else:
@@ -179,17 +185,25 @@ class MainWindows:
                 self.ui.plainTextEdit.setReadOnly(True)
             self.ui.plainTextEdit.insertPlainText(content + '\n')
 
-    def print_status_bar(self, text: str = ""):
+    def print_status_bar(self, text: str = "", is_wait_status: bool = False):
         """
         打印底部状态栏的日志
+        :param is_wait_status: 是否为等待状态，会一直刷新
         :param text:
         :return:
         """
-        # time_str: str = strftime("%H:%M:%S", localtime())
+        wait_str_index: int = 0
         if text != "":
-            self.ui.statusbar.showMessage("  " + text)
+            while 1:
+                if is_wait_status:
+                    wait_str_index = wait_str_index + 1 if wait_str_index < 6 else 0
+                    self.ui.statusbar.showMessage("  " + text + "*"*wait_str_index)
+                    time.sleep(1)
+                else:
+                    self.ui.statusbar.showMessage("  " + text)
+                    break
         else:
-            self.ui.statusbar.showMessage("等待执行")
+            self.ui.statusbar.showMessage(" 等待执行")
 
     def down_novel_set_save_path(self):
         """
@@ -316,22 +330,6 @@ class MainWindows:
                                                         save_novel_path), is_clear=True)
         else:
             self.print_log("还未选中需要另存的文件", is_clear=True)
-
-    # def reset_select_mode_item_format(self):
-    #     """
-    #     2个下拉框进行关联，选中其中一个就重置另一个
-    #     :return:
-    #     """
-    #     if self.ui.manual_comboBox_select_format_mode.currentText() != "无":
-    #         self.ui.manual_comboBox_select_change_line_mode.setCurrentIndex(0)
-
-    # def reset_select_mode_item_change_line(self):
-    #     """
-    #     2个下拉框进行关联，选中其中一个就重置另一个
-    #     :return:
-    #     """
-    #     if self.ui.manual_comboBox_select_change_line_mode.currentText() != "无":
-    #         self.ui.manual_comboBox_select_format_mode.setCurrentIndex(0)
 
     def manual_execute(self):
         """

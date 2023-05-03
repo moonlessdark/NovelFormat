@@ -194,4 +194,3 @@ class Ui_MainWindow(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QCoreApplication.translate("MainWindow", u"\u6587\u672c\u5904\u7406", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"\u4fe1\u606f\u6253\u5370", None))
     # retranslateUi
-
