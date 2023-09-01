@@ -1,5 +1,5 @@
 chardet
-zhconv~=1.4.3
+zhconv
 requests
 lxml
 retrying

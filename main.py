@@ -1,12 +1,11 @@
 import sys
 
-from PySide6 import QtCore, QtWidgets
+from PySide6 import QtWidgets
 
-from gui.gui_connect.new_main_connect import MainWindows
+from NovelGui.QConnect.PageConnect import PageConnect
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
-    # QApplication.setStyle(QStyleFactory.create('Fusion'))
-    main_window = MainWindows()
-    main_window.ui.show()
+    main_window = PageConnect()
+    main_window.show()
     sys.exit(app.exec())

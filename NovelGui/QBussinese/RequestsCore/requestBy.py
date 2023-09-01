@@ -2,11 +2,12 @@
 import random
 import time
 
+from PySide6.QtCore import Signal
 from lxml import etree
 from requests import Session
 from retrying import retry
 
-from novel_bussinese.requestsCore import UABy
+from NovelGui.QBussinese.RequestsCore import UABy
 
 
 class request:
@@ -14,12 +15,25 @@ class request:
     二次封装
     """
 
-    def __init__(self, pyqtSignal_str=None):
+    def __init__(self, py_signal_str: Signal = None):
+        """
+
+        :param py_signal_str: pyside6 信号
+        """
         super().__init__()
         self.p = None
         self.re = Session()
         self.count_i = 0
-        self.single_str = pyqtSignal_str
+        self.single_str = py_signal_str
+
+    def __print_single(self, content: str):
+        """
+        将内容打印到pyside的窗口控件
+        :param content: 内容
+        :return:
+        """
+        if self.single_str is not None:
+            self.single_str.emit(content)
 
     @retry(stop_max_attempt_number=5, retry_on_result=None)  # 引入的第三方模块，用于失败自动重试,重试10次结束
     def get(self, url: str, proxies=None, header: UABy = UABy.user_agent.android.value, encoding: str = "utf-8"):
@@ -48,8 +62,7 @@ class request:
         element = self.re.get(url=url, stream=True, timeout=(20, 300), headers=header, proxies=self.p)
         if element is not None:
             if element.status_code != 200:
-                # print("返回的页面状态码异常:%d" % element.status_code)
-                self.single_str.emit("返回的页面状态码异常:%d" % element.status_code)
+                self.__print_single("返回的页面状态码异常:%d" % element.status_code)
                 return None
             element.encoding = encoding  # 爬国内的网站，还是gb18030好使，国外就用 uft-8
             if 'text/html' in element.headers.get('Content-Type'):

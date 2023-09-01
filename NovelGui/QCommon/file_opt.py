@@ -1,9 +1,10 @@
+import html
 import os
 
 import chardet
 
-from novel_bussinese.Tools.tradition import tradition2simple
-from novel_bussinese.template.rexp_template import Template
+from NovelGui.QCommon.tradition import tradition2simple
+from Resource.rexp_template import NovelString
 
 
 class FileOpt:
@@ -29,7 +30,7 @@ class FileOpt:
         :param file_path: txt文件的路径
         :return:
         """
-        error_str = Template.error_str.value
+        error_str = NovelString.html_error_str.value
         with open(file_path, "rb") as f:
             content = f.read()
         content_encode = chardet.detect(content)  # 推断一下文本内容的编码格式
@@ -41,6 +42,7 @@ class FileOpt:
         else:
             with open(file_path, encoding="utf-8") as file:
                 read_content = file.read()
+        read_content = html.unescape(read_content)
         read_content = tradition2simple(read_content)
         for i in error_str:
             """
