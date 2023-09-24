@@ -46,8 +46,34 @@ class PageConnect(QLeftTabWidget):
         # 线程链接
 
         self.format_th_manual.sin_out.connect(self.print_content)
-        self.format_th_manual.sin_out_information.connect(self.print_information)
+        self.format_th_manual.sin_out_information.connect(self.print_novel_error_information)
         self.format_th_manual.sin_out_select_error_str.connect(self.manual_select_str)
+
+    def print_novel_error_information(self, error_str):
+        """
+        用于打印处理小说时的错误信息提示
+        """
+        message = QMessageBox(self)
+        # 设置消息框最小尺寸
+        message.setMinimumSize(700, 200)
+        message.setWindowTitle("处理信息")
+        # 设置文字
+        message.setText(str(error_str))
+        # 设置信息性文字
+        message.setInformativeText("该内容附近有错误信息")
+        # 控制消息框类型以改变图标
+        message.setIcon(QMessageBox.Icon.Warning)
+        message.setStandardButtons(QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel)
+        # 设置默认按钮，会被默认打开或突出显示
+        message.setDefaultButton(QMessageBox.StandardButton.Ok)
+
+        # 将消息框弹出，返回用户的选择
+        ret = message.exec()
+
+        if ret == QMessageBox.StandardButton.Ok:
+            pass
+        else:
+            pass
 
     def print_information(self, error_str):
         """
@@ -61,8 +87,6 @@ class PageConnect(QLeftTabWidget):
         message.setWindowTitle("处理信息")
         # 设置文字
         message.setText(str(error_str))
-        # 设置信息性文字
-        message.setInformativeText("该内容附近有错误信息")
         # 控制消息框类型以改变图标
         message.setIcon(QMessageBox.Icon.Warning)
         message.setStandardButtons(QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel)

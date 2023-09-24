@@ -31,6 +31,7 @@ class QLeftTabWidget(QtWidgets.QWidget):
         3个功能菜单的按钮布局
         """
         self.widget_main_ui = QtWidgets.QWidget()
+        self.widget_main_ui.setStyleSheet("background: rgb(255,255,255)")
 
         self.lay_out_main_button = QtWidgets.QVBoxLayout()
 
@@ -41,9 +42,10 @@ class QLeftTabWidget(QtWidgets.QWidget):
         self.lay_out_main_button.setAlignment(QtCore.Qt.AlignmentFlag.AlignHCenter)
 
         self.lay_out_main_page = QtWidgets.QHBoxLayout(self.widget_main_ui)
-        self.lay_out_main_page.setContentsMargins(5, 5, 0, 5)
+        self.lay_out_main_button.setSpacing(5)
+        self.lay_out_main_page.setContentsMargins(0, 5, 0, 5)
         self.lay_out_main_page.addLayout(self.lay_out_main_button)
-        self.lay_out_main_page.addWidget(self.line_left)
+        # self.lay_out_main_page.addWidget(self.line_left)
 
         """
         创建三个QWidget类型的子页面,用于存放控件
@@ -63,7 +65,7 @@ class QLeftTabWidget(QtWidgets.QWidget):
         """
 
         self.lay_out_main_ui = QtWidgets.QHBoxLayout(self)
-        self.lay_out_main_ui.setContentsMargins(5, 5, 5, 5)
+        self.lay_out_main_ui.setContentsMargins(0, 0, 0, 0)
         self.lay_out_main_ui.addWidget(self.widget_main_ui)
         self.lay_out_main_ui.addWidget(self.stack)
 
@@ -142,13 +144,29 @@ class QLeftTabWidget(QtWidgets.QWidget):
     def load_ui_main_element(self):
         """
         加载主界面UI
+        Pyside6 关于图片资源的加载
+        https://stackoverflow.com/questions/66099225/how-can-resources-be-provided-in-pyqt6-which-has-no-pyrcc
         """
         self.setMinimumSize(300, 400)
         self.resize(300, 400)
 
-        self.button_down_text.setText("D")
-        self.button_format_text.setText("F")
-        self.button_reset_page.setText("R")
+        button_width: int = 24
+        QtCore.QDir.addSearchPath('icons', 'Resource/')
+
+        self.setWindowIcon(QtGui.QIcon('icons:file.svg'))
+
+        self.button_down_text.setIcon(QtGui.QIcon('icons:dwonload.svg'))
+        self.button_down_text.setIconSize(QtCore.QSize(button_width, button_width))
+        self.button_down_text.setFlat(True)
+        # self.button_down_text.setStyleSheet('background-color: transparent;')  # 移除按钮边框
+
+        self.button_format_text.setIcon(QtGui.QIcon('icons:file.svg'))
+        self.button_format_text.setIconSize(QtCore.QSize(button_width, button_width))
+        self.button_format_text.setFlat(True)
+
+        self.button_reset_page.setIcon(QtGui.QIcon('icons:reset.svg'))
+        self.button_reset_page.setIconSize(QtCore.QSize(button_width, button_width))
+        self.button_reset_page.setFlat(True)
 
         self.button_reset_page.hide()
         self.stack.hide()
@@ -163,7 +181,7 @@ class QLeftTabWidget(QtWidgets.QWidget):
         """
         self.button_reset_page.show()
         self.stack.show()
-        self.line_left.show()
+        # self.line_left.show()
 
     def load_ui_down_novel_element(self):
         """
@@ -180,6 +198,7 @@ class QLeftTabWidget(QtWidgets.QWidget):
         self.lay_out_down_novel_param.addWidget(self.combox_select_save_type, 4, 1)
 
         self.lay_out_down_novel = QtWidgets.QVBoxLayout()
+
         self.lay_out_down_novel.setSpacing(5)
         self.lay_out_down_novel.setContentsMargins(0, 5, 5, 5)
         self.lay_out_down_novel.addLayout(self.lay_out_down_novel_param)
@@ -224,7 +243,7 @@ class QLeftTabWidget(QtWidgets.QWidget):
 
         layout_opt_left_param = QtWidgets.QVBoxLayout(widget_format_param)
         layout_opt_left_param.setSpacing(5)
-        layout_opt_left_param.setContentsMargins(5, 0, 5, 0)
+        layout_opt_left_param.setContentsMargins(0, 5, 5, 5)
         layout_opt_left_param.addLayout(layout_opt_file_button)
         layout_opt_left_param.addWidget(self.manual_file_item_list)
         layout_opt_left_param.addLayout(layout_opt_format_mode_param)
