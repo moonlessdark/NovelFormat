@@ -159,10 +159,13 @@ class PageConnect(QLeftTabWidget):
 
     def down_novel_open_folder(self):
         if self.down_novel_save_path != "":
-            if platform.system().lower() == "Windows":
+            if platform.system() == "Windows":
                 os.startfile(self.down_novel_save_path)
+            elif platform.system() == "Darwin":
+                import subprocess
+                subprocess.run(['open', self.down_novel_save_path])
             else:
-                self.print_log("暂时不支持非windows系统的打开目录", is_clear=True)
+                self.print_log("暂时不支持当前系统打开目录", is_clear=True)
         else:
             self.print_log("还未设置保存目录,无法打开", is_clear=True)
 
