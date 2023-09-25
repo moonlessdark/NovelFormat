@@ -5,7 +5,8 @@ from datetime import datetime
 from PySide6.QtGui import QTextCursor
 from PySide6.QtWidgets import QMessageBox, QFileDialog
 
-# from NovelGui.GuiPage.main_page import QLeftTabWidget
+import subprocess
+
 from NovelGui.GuiPage.MainPage import QLeftTabWidget
 from NovelGui.QCommon.file_opt import FileOpt
 from NovelGui.QTh.th_download import SignalThreading
@@ -162,7 +163,6 @@ class PageConnect(QLeftTabWidget):
             if platform.system() == "Windows":
                 os.startfile(self.down_novel_save_path)
             elif platform.system() == "Darwin":
-                import subprocess
                 subprocess.run(['open', self.down_novel_save_path])
             else:
                 self.print_log("暂时不支持当前系统打开目录", is_clear=True)
