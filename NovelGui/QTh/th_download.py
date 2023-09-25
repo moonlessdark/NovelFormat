@@ -43,6 +43,7 @@ class SignalThreading(QThread):
         """
         self.working = True
         self.cond.wakeAll()
+        self.get.execute_single(True)
 
     def get_param(self, down_url: str, down_mode: str, save_type: str, save_novel_path: str):
         """

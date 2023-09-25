@@ -15,6 +15,8 @@ class QLeftTabWidget(QtWidgets.QWidget):
 
         # self.setStyleSheet("border: 1px solid black;")
 
+        self.setWindowTitle("NovelFormat")
+
         """
         主功能按钮
         """
