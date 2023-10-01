@@ -309,7 +309,7 @@ class GetPageNovel:
                 开始保存获取的内容
                 """
                 if "下一章" in next_page_name:
-                    self.__print_single("%s 已获取,正在保存..." % page_name)
+                    # self.__print_single("%s 已获取,正在保存..." % page_name)
                     if next_mode is False:
                         # 表示下载完这一章就结束
                         self.__save_page_content(page_content, file_path, page_name)
