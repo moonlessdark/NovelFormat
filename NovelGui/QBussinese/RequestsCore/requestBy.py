@@ -1,13 +1,16 @@
 # 本模块为获取页面
+import dataclasses
 import random
 import time
-
+from collections import namedtuple
 from PySide6.QtCore import Signal
 from lxml import etree
 from requests import Session
 from retrying import retry
-from bs4 import BeautifulSoup
 from NovelGui.QBussinese.RequestsCore import UABy
+
+# 用于返回数据
+ResponseHtml = namedtuple("ResponseHtml", ["response_code", "response_result"])
 
 
 class request:
@@ -36,7 +39,7 @@ class request:
             self.single_str.emit(content)
 
     @retry(stop_max_attempt_number=5, retry_on_result=None)  # 引入的第三方模块，用于失败自动重试,重试10次结束
-    def get(self, url: str, proxies=None, header: UABy = UABy.user_agent.chrome_macos.value, encoding: str = "utf-8"):
+    def get(self, url: str, proxies=None, header: UABy = UABy.user_agent.chrome_macos.value) -> ResponseHtml:
         """
         获取页面信息并返回
         :param encoding: utf-8 或者 gb18030
@@ -66,15 +69,15 @@ class request:
             element.encoding = element.apparent_encoding  # # 爬国内的网站，还是gb18030好使，国外就用 uft-8
             if element.status_code != 200:
                 self.__print_single("返回的页面状态码异常:%d" % element.status_code)
-                return None
+                return ResponseHtml(element.status_code, None)
             if 'text/html' in element.headers.get('Content-Type'):
                 # 如果是html的，就格式化一下return
                 html_element = etree.HTML(element.text)
-                return html_element
+                return ResponseHtml(element.status_code, html_element)
             else:
                 # 不是网页就是文件啦，直接返回内容
-                return element.content
+                return ResponseHtml(element.status_code, element.content)
         else:
             if element is None or element == '':
                 # print("get到的content是None")
-                return None
+                return ResponseHtml(0, None)
