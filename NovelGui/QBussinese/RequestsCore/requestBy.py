@@ -68,7 +68,7 @@ class request:
         if element is not None:
             element.encoding = element.apparent_encoding  # # 爬国内的网站，还是gb18030好使，国外就用 uft-8
             if element.status_code != 200:
-                self.__print_single("返回的页面状态码异常:%d" % element.status_code)
+                # self.__print_single("返回的页面状态码异常:%d" % element.status_code)
                 return ResponseHtml(element.status_code, None)
             if 'text/html' in element.headers.get('Content-Type'):
                 # 如果是html的，就格式化一下return

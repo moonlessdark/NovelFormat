@@ -259,6 +259,7 @@ class GetPageNovel:
                 continue
             elif r_data.response_code == 404:
                 self.__print_single("已经全部获取完毕，即将结束")
+                break
             else:
                 self.__print_single("获取网页失败,错误码：%d" % r_data.response_code)
                 break
