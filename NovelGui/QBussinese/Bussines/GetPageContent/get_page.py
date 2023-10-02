@@ -85,7 +85,7 @@ class GetPageNovel:
 
     def __get_website_url(self, url: str):
         """
-        分析出域名
+        分析出本网站的域名
         :param url:
         :return:
         """
@@ -97,6 +97,29 @@ class GetPageNovel:
         str_index = title_name.regs[0][1] - 1
         self.url_website = url[:str_index]
         return self.url_website
+
+    def __get_execute_url(self, index_page_url: str, next_page_url: str):
+        """
+        拼接一下下一页/下一章的URL
+        :param index_page_url: 当前页面执行的URL
+        :param next_page_url:  下一页的URL(该URL不一定是完整的)
+        """
+        domain_str: str = "http"
+        if "https" in index_page_url:
+            domain_str = "https"
+        if next_page_url.find(domain_str, 0, 5) == -1:
+            count_next_url_str: int = next_page_url.count("/")
+            if count_next_url_str > 0:
+                left_str = next_page_url.split("/")[0]
+                if left_str != "":
+                    count_next_url_str = count_next_url_str + 1
+            count_next_url_str = 1 if count_next_url_str == 0 else count_next_url_str
+            count_index_url_str: list = [sub_str.start() for sub_str in re.finditer("/", index_page_url)]
+            count_index_url_str = list(reversed(count_index_url_str))  # 反转一下，方便取值
+            main_url: str = index_page_url[:count_index_url_str[count_next_url_str-1]]
+            middle_str = "/" if main_url[-1:] != "/" and next_page_url[0] != "/" else ""
+            next_page_url = main_url + middle_str + next_page_url
+        return next_page_url
 
     def __save_page_content(self, content: list, file_path, file_name):
         if len(content) > 0:
@@ -126,7 +149,7 @@ class GetPageNovel:
         :return:
         """
         url_main: str = self.__get_website_url(url)
-        data = self.r.get(url, header=UABy.user_agent.android.value, encoding="gb18030")
+        data = self.r.get(url, header=UABy.user_agent.chrome_macos.value, encoding="gb18030")
         self.__print_single("页面模板匹配中...")
         web_temp: WebsiteTemp = self.check_web.check_website(data)
         if web_temp.value == WebsiteTemp.shu_bao.value:
@@ -143,13 +166,13 @@ class GetPageNovel:
         :param save_mode:
         :return:
         """
-        url_main: str = self.__get_website_url(url)
-        data = self.r.get(url, header=UABy.user_agent.android.value, encoding="gb18030")
+        data = self.r.get(url)
         if data is not None:
             self.__print_single("页面模板匹配中...")
             content_xpath = check_page_temp(data)
             if content_xpath is not None:
-                self.__get_page_novel_content2(url, url_main, file_path, next_mode, save_mode, content_xpath=content_xpath)
+                self.__get_page_novel_content2(url, file_path, next_mode, save_mode,
+                                               content_xpath=content_xpath)
             else:
                 self.__print_single("暂不支持该网站的模式")
         else:
@@ -175,10 +198,10 @@ class GetPageNovel:
                 self.__print_single("已经接受到强制终止的信号")
                 break
             if next_page_url == "":
-                data = self.r.get(index_page_url, header=UABy.user_agent.android.value, encoding="gb18030")
+                data = self.r.get(index_page_url, header=UABy.user_agent.chrome_macos.value, encoding="gb18030")
             else:
                 data = self.r.get(url=main_url + str(next_page_url),
-                                  header=UABy.user_agent.android.value,
+                                  header=UABy.user_agent.chrome_macos.value,
                                   encoding="gb18030")
             if data is not None:
                 """
@@ -237,7 +260,7 @@ class GetPageNovel:
             else:
                 self.__print_single("获取网页失败")
 
-    def __get_page_novel_content2(self, page_url: str, main_url: str, file_path: str, next_mode: bool, save_mode: bool,
+    def __get_page_novel_content2(self, page_url: str, file_path: str, next_mode: bool, save_mode: bool,
                                   content_xpath: WebSiteTempXpathDataClass):
         """
         获取小说内容
@@ -258,11 +281,10 @@ class GetPageNovel:
                 self.__print_single("已经接受到强制终止的信号")
                 break
             if next_page_url == "":
-                data = self.r.get(index_page_url, header=UABy.user_agent.android.value, encoding="gb18030")
+                data = self.r.get(index_page_url)
             else:
-                data = self.r.get(url=main_url + str(next_page_url),
-                                  header=UABy.user_agent.android.value,
-                                  encoding="gb18030")
+                next_page_url = self.__get_execute_url(index_page_url=index_page_url, next_page_url=next_page_url)
+                data = self.r.get(url=next_page_url)
             if data is not None:
                 """
                 获取一下当前页面的内容
@@ -309,7 +331,9 @@ class GetPageNovel:
                 开始保存获取的内容
                 """
                 if "下一章" in next_page_name:
-                    # self.__print_single("%s 已获取,正在保存..." % page_name)
+                    """
+                    如果当前页面有下一章的按钮，说明章姐结束，可以保存了
+                    """
                     if next_mode is False:
                         # 表示下载完这一章就结束
                         self.__save_page_content(page_content, file_path, page_name)
@@ -322,16 +346,14 @@ class GetPageNovel:
                         # 把标题插入到最前面
                         page_content = [page_name + "\n"] + page_content + ['\n']
                         self.__save_page_content(page_content, file_path, novel_name)
-                    if ".html" not in next_page_url:
-                        # 说明是当前的最后一章了
-                        break
                     page_content.clear()
-                    page_name = ""
             else:
                 self.__print_single("获取网页失败")
 
 
 if __name__ == '__main__':
+    # a = get_execute_url(index_page_url="http://www.lingdxsw.com/book/60183/43107946_3.html", next_page_url="43107948.html")
+    # print(a)
     GetPageNovel().get_page_data2(url="https://m.xinbanzhu.net/0_1/136067.html",
                                   file_path="/Users/luojun/Project/NovelFormatPyside6/Resource", next_mode=True,
                                   save_mode=False)

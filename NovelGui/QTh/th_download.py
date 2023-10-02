@@ -70,7 +70,7 @@ class SignalThreading(QThread):
             else:
                 self.sin_work_status.emit(True)
                 self.get.get_page_data2(url=self.down_url, file_path=self.save_novel_path, next_mode=self.down_mode,
-                                       save_mode=self.save_type)
+                                        save_mode=self.save_type)
                 self.mutex.unlock()
                 self.pause()
             self.sin_work_status.emit(False)

@@ -6,7 +6,7 @@ from PySide6.QtCore import Signal
 from lxml import etree
 from requests import Session
 from retrying import retry
-
+from bs4 import BeautifulSoup
 from NovelGui.QBussinese.RequestsCore import UABy
 
 
@@ -36,7 +36,7 @@ class request:
             self.single_str.emit(content)
 
     @retry(stop_max_attempt_number=5, retry_on_result=None)  # 引入的第三方模块，用于失败自动重试,重试10次结束
-    def get(self, url: str, proxies=None, header: UABy = UABy.user_agent.android.value, encoding: str = "utf-8"):
+    def get(self, url: str, proxies=None, header: UABy = UABy.user_agent.chrome_macos.value, encoding: str = "utf-8"):
         """
         获取页面信息并返回
         :param encoding: utf-8 或者 gb18030
@@ -55,21 +55,21 @@ class request:
         if header is not None:
             header = {"user-agent": header}
 
+        # encoding = 'utf-8'
+
         self.re.close()  # 避免重试时有太多连接，开始时就先关闭一下
         sleep_time = random.randint(1, 5)
         time.sleep(sleep_time)  # 稍微等待以下，减小服务器压力
 
         element = self.re.get(url=url, stream=True, timeout=(20, 300), headers=header, proxies=self.p)
         if element is not None:
+            element.encoding = element.apparent_encoding  # # 爬国内的网站，还是gb18030好使，国外就用 uft-8
             if element.status_code != 200:
                 self.__print_single("返回的页面状态码异常:%d" % element.status_code)
                 return None
-            element.encoding = encoding  # 爬国内的网站，还是gb18030好使，国外就用 uft-8
             if 'text/html' in element.headers.get('Content-Type'):
                 # 如果是html的，就格式化一下return
-                element.content.decode(encoding, "replace")
                 html_element = etree.HTML(element.text)
-                # print(element.content.decode("gb18030", "replace"))
                 return html_element
             else:
                 # 不是网页就是文件啦，直接返回内容
