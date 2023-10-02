@@ -22,6 +22,9 @@ class PageConnect(QLeftTabWidget):
         self.down_novel_save_path: str = ""  # 保存下载的文件路径
         self.execute_status: bool = False  # 是否正在执行任务
 
+        # 初始化下载目录，默认设置为 Download文件夹
+        self.get_download_path()
+
         # Qth
         self.down_th = SignalThreading()
         self.format_th_manual = ManualFormat()
@@ -127,10 +130,25 @@ class PageConnect(QLeftTabWidget):
         self.novel_edit_print.setReadOnly(False)  # 允许编辑
         self.novel_edit_print.setPlainText(content + '\n')
 
+    def get_download_path(self):
+        """
+        Returns the default downloads path for linux or windows
+        source:https://www.cnpython.com/qa/59995
+        """
+        if os.name == 'nt':
+            import winreg
+            sub_key = r'SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders'
+            downloads_guid = '{374DE290-123F-4565-9164-39C4925E467B}'
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER, sub_key) as key:
+                location = winreg.QueryValueEx(key, downloads_guid)[0]
+                self.down_novel_save_path = location
+        else:
+            self.down_novel_save_path = os.path.join(os.path.expanduser('~'), 'downloads')
+        return self.down_novel_save_path
+
     """
     下载小说
     """
-
     def change_execute_status(self, execute_status: bool):
         """
         修改执行状态
