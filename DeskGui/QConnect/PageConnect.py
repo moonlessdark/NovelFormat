@@ -1,19 +1,22 @@
 import os
 import platform
+import subprocess
 from datetime import datetime
 
 from PySide6.QtGui import QTextCursor
 from PySide6.QtWidgets import QMessageBox, QFileDialog
 
-import subprocess
+from Common.RequestsCore.UABy import BrowserUserAgent
 
-from NovelGui.GuiPage.MainPage import QLeftTabWidget
-from NovelGui.QCommon.file_opt import FileOpt
-from NovelGui.QTh.th_download import SignalThreading
-from NovelGui.QTh.th_format import ManualFormat
+from Businese.file_opt import FileOpt
+from DeskGui.GuiPage.DownNovelPage import QDownNovel, QSettingHeaderParam
+from DeskGui.GuiPage.DownSettingPage import QDownSetting
+from DeskGui.GuiPage.FormatNovelPage import QFormatNovel
+from DeskGui.QTh.th_download import SignalThreading, SignalThreadingComic
+from DeskGui.QTh.th_format import ManualFormat
 
 
-class PageConnect(QLeftTabWidget):
+class PageConnect(QDownNovel, QFormatNovel, QDownSetting):
 
     def __init__(self):
         super().__init__()
@@ -21,13 +24,22 @@ class PageConnect(QLeftTabWidget):
         self.file_items_dict = None
         self.down_novel_save_path: str = ""  # 保存下载的文件路径
         self.execute_status: bool = False  # 是否正在执行任务
+        self.req_header: dict = {}
 
         # 初始化下载目录，默认设置为 Download文件夹
         self.get_download_path()
+        self.load_browser_agent()
+
+        # QChildWindows
+        self.param_header_widget = QSettingHeaderParam()
+        self.param_header_widget.param_signal.connect(self.param_header_widget_submit)
+
+        self.button_setting_req_header_param.clicked.connect(self.param_header_widget_show)
 
         # Qth
         self.down_th = SignalThreading()
         self.format_th_manual = ManualFormat()
+        self.down_th_comic = SignalThreadingComic()
 
         # connect
         self.button_set_save_folder.clicked.connect(self.down_novel_set_save_path)
@@ -36,6 +48,9 @@ class PageConnect(QLeftTabWidget):
 
         self.down_th.sin_out.connect(self.print_log)
         self.down_th.sin_work_status.connect(self.change_execute_status)
+
+        self.down_th_comic.sin_out.connect(self.print_log)
+        self.down_th_comic.sin_work_status.connect(self.change_execute_status)
 
         # 手动格式化
         self.manual_button_get_file_list.clicked.connect(self.format_manual_get_file_items)  # 获取要处理的小说列表
@@ -92,7 +107,7 @@ class PageConnect(QLeftTabWidget):
         # 设置文字
         message.setText(str(error_str))
         # 控制消息框类型以改变图标
-        message.setIcon(QMessageBox.Icon.Warning)
+        message.setIcon(QMessageBox.Icon.NoIcon)
         message.setStandardButtons(QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel)
         # 设置默认按钮，会被默认打开或突出显示
         message.setDefaultButton(QMessageBox.StandardButton.Ok)
@@ -146,6 +161,10 @@ class PageConnect(QLeftTabWidget):
             self.down_novel_save_path = os.path.join(os.path.expanduser('~'), 'downloads')
         return self.down_novel_save_path
 
+    def load_browser_agent(self):
+        for agent_key in BrowserUserAgent:
+            self.combox_select_down_agent.addItem(agent_key.c_name, agent_key.c_value)
+
     """
     下载小说
     """
@@ -195,16 +214,38 @@ class PageConnect(QLeftTabWidget):
         down_url: str = self.line_edit_input_website_url.toPlainText()  # 下载的url
         down_mode: str = self.combox_select_down_type.currentText()  # 批量下载，单章下载
         save_mode: str = self.combox_select_save_type.currentText()  # 保存为 “单文件”、“多文件”
+        down_type: str = self.combox_select_down_mode.currentText()  # 下载模式一，下载模式二
+        # 下载模式，电脑端访问还是移动端访问
+        down_agent: str = self.combox_select_down_agent.currentData() if len(self.req_header) == 0 else self.req_header
+
         if self.execute_status is False:
             self.down_th.start_execute_init()
             if down_url == "":
-                self.print_log("还未输入下载的小说URL，请输入第一页小说内容所在的URL", is_clear=True)
+                self.print_log("还未输入下载的小说/漫画首页内容的URL，请输入第一页小说内容所在的URL", is_clear=True)
             elif self.down_novel_save_path == "":
                 self.print_log("还未设置保存的目录", is_clear=True)
             else:
-                self.down_th.get_param(down_url=down_url, down_mode=down_mode, save_type=save_mode,
-                                       save_novel_path=self.down_novel_save_path)
-                self.down_th.start()
+                if self.QRadioButton_down_novel.isChecked():
+                    self.down_th.get_param(down_url=down_url, down_mode=down_mode, save_type=save_mode,
+                                           save_novel_path=self.down_novel_save_path, down_agent=down_agent)
+                    self.down_th.start()
+                elif self.QRadioButton_down_comic.isChecked():
+                    if down_type == "下载模式一":
+                        """
+                        精简模式，页面只有漫画内容和下一页上一页的按钮，没有其他内容展示
+                        """
+                        self.down_th_comic.get_param(down_url=down_url, down_agent=down_agent,
+                                                     save_novel_path=self.down_novel_save_path,
+                                                     save_type=save_mode)
+                        self.down_th_comic.start()
+                    elif down_type == "下载模式二":
+                        """
+                        标准模式，页面除了漫画内容还有标题之类的
+                        """
+                        pass
+                else:
+                    self.print_log("还未选择下载小说 OR 下载漫画", is_clear=True)
+
         else:
             self.down_th.pause()
 
@@ -239,7 +280,7 @@ class PageConnect(QLeftTabWidget):
         item = self.manual_file_item_list.selectedItems()[0]
         item_path: str = self.file_items_dict.get(item.text())
         file_path = item_path + item.text()
-        content = FileOpt().read_file(file_path)
+        content = FileOpt().read_novel_file(file_path)
         self.print_content(content)
         self.novel_edit_print.moveCursor(QTextCursor.Start)
 
@@ -357,6 +398,45 @@ class PageConnect(QLeftTabWidget):
             self.novel_edit_print.clear()
             self.novel_edit_print.setPlainText(content)
             # self.print_status_bar("已经全部处理完")
+
+    def param_header_widget_show(self):
+        """
+        打开设置header的窗口
+        :return:
+        """
+        self.param_header_widget.open_widows_header_param()
+
+    def param_header_widget_submit(self, curl_str: str):
+        """"""
+        def format_curl(curl_strs: str) -> dict:
+            """
+            将curl中的header提取出来
+            :param curl_strs: curl
+            :return:
+            """
+            header_dict: dict = {}
+            curl_list: list = curl_strs.split("-H")
+            for i in curl_list:
+                if ":" in i and "http" not in i:
+                    if "--compressed" in i:
+                        i = i.replace("--compressed", "")
+                    i = i.replace("'", "")
+                    i = i.replace("\\", "")
+                    key, value = i.split(":")
+                    header_dict[key.strip()] = value.strip()
+            return header_dict
+        if curl_str != "":
+            self.req_header = format_curl(curl_str)
+        else:
+            self.req_header = {}
+        if len(self.req_header) > 0:
+            self.print_log("新的请求头已经更新")
+        else:
+            self.print_log("输入框中未检测到完整的curl链接，旧请求头已经重置，将读取默认设置")
+        self.param_header_widget.close_widows_header_param()
+
+
+
 
 # class MainWindows:
 #
@@ -528,7 +608,7 @@ class PageConnect(QLeftTabWidget):
 #         item = self.ui.manual_file_item_list.selectedItems()[0]
 #         item_path: str = self.file_items_dict.get(item.text())
 #         file_path = item_path + item.text()
-#         content = FileOpt().read_file(file_path)
+#         content = NovelFileOpt().read_novel_file(file_path)
 #         self.print_log(content, True, False, True)
 #         self.ui.plainTextEdit.moveCursor(QTextCursor.Start)
 #

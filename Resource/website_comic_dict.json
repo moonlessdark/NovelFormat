@@ -1,0 +1,6 @@
+{
+  "WebSiteTemp":{
+      "comicContentXpath":["//div[@id='content']/section[@id='image-container']/a/img/@src"],
+      "nextPageUrlXpath": ["//div[@id='content']/section[@id='image-container']/a/@href"]
+  }
+}

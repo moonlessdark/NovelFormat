@@ -1,8 +1,8 @@
 from PySide6.QtCore import QThread, QWaitCondition, QMutex, Signal
 
-# from NovelGui.QBussinese.Bussines.FormatMode.common import FormatCommon, WrapLine
-from NovelGui.QBussinese.Bussines.FormatMode.FormatCommon import FormatCommon as fc
-from NovelGui.QCommon.file_opt import FileOpt
+from Businese.FormatMode.ClearAdString import ClearAd
+from Businese.FormatMode.LineWrapFormat import LineWrap
+from Businese.FormatMode.tradition import tradition2simple
 
 
 class ManualFormat(QThread):
@@ -65,28 +65,26 @@ class ManualFormat(QThread):
             if self.working is False:
                 return None
             try:
-                self.sin_status_bar.emit("正在计算文本长度", True)
-                error_mark_str: str = fc().check_novel_error_mark_str(self.content)
-                if error_mark_str != "":
-                    self.sin_out_information.emit(error_mark_str)
-                    self.sin_out_select_error_str.emit(error_mark_str)
-                    continue
-                ye: str = fc().clear_ad_str_by_str(self.content)
-                ye: list = fc().wrap_line_by_double_quotation_mark_by_str(ye)
-                ye: list = fc().split_line_by_warp_str(ye)
                 if self.format_mode == "换行校验":
+                    self.sin_status_bar.emit("正在计算文本长度", True)
+                    error_mark_str: str = LineWrap().check_novel_error_mark_str(self.content)
+                    if error_mark_str != "":
+                        self.sin_out_information.emit(error_mark_str)
+                        self.sin_out_select_error_str.emit(error_mark_str)
+                        continue
+                    ye: list = LineWrap().wrap_line_by_double_quotation_mark_by_str(self.content)
+                    ye: list = LineWrap().split_line_by_warp_str(ye)
                     if len(ye) == 0:
                         continue
-                    content_list_format: list = fc().merge_line(ye)
-                    content = fc.format_merge_list(content_list_format)
-                elif self.format_mode == "换行校验(增强)":
-                    self.sin_out_information.emit("暂时不支持")
+                    content_list_format: list = LineWrap().merge_line(ye)
+                    content: str = LineWrap().format_merge_list(content_list_format)
                 elif self.format_mode == "去除广告":
-                    self.sin_out_information.emit("暂时不支持")
+                    content = ClearAd().clear_ad_str(self.content)
+                    content = ClearAd().clear_html_code(content)
                 elif self.format_mode == "词语纠错":
                     self.sin_out_information.emit("暂时不支持")
-                elif self.format_mode == "繁转简":
-                    content = FileOpt().tradition2simple(self.content)
+                elif self.format_mode == "繁简互换":
+                    content = tradition2simple(self.content)
             except Exception as e:
                 # 打印异常信息
                 self.sin_out_information.emit(str(e))
